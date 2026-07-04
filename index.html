@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>虛構他者獨白 | Research Console</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="dashboard">
+      <aside class="sidebar" aria-label="主要導覽">
+        <div class="brand">
+          <p>Research Console</p>
+          <h1>虛構他者獨白</h1>
+        </div>
+        <nav class="nav" id="nav"></nav>
+        <div class="sidebar-footer">
+          <span class="status-dot"></span>
+          <span>Prototype v1</span>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Front-end prototype</p>
+            <h2 id="page-title">參與者資料</h2>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" id="export-json" type="button">匯出 JSON</button>
+            <button class="ghost-button danger" id="reset-data" type="button">清空資料</button>
+          </div>
+        </header>
+
+        <div class="step-flow" id="step-flow"></div>
+
+        <section class="panel" id="participant-step">
+          <div class="panel-heading">
+            <p>Step 01</p>
+            <h3>參與者基本資料</h3>
+          </div>
+          <div class="form-grid">
+            <label>
+              <span>參與者代號</span>
+              <input id="participant-code" autocomplete="off" placeholder="例如：P-001" />
+            </label>
+            <label>
+              <span>訪談日期</span>
+              <input id="interview-date" type="date" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel hidden" id="event-step">
+          <div class="panel-heading">
+            <p>Step 02</p>
+            <h3>事件與時間點</h3>
+          </div>
+          <div class="form-grid two">
+            <label>
+              <span>真實事件描述</span>
+              <textarea id="real-event" placeholder="輸入參與者敘述的真實關鍵事件"></textarea>
+            </label>
+            <label>
+              <span>What if 假設情境描述</span>
+              <textarea id="counterfactual-event" placeholder="輸入反事實情境，例如：如果當時沒有發生..."></textarea>
+            </label>
+            <label>
+              <span>過去時間點</span>
+              <input id="past-time" placeholder="例如：小學三年級" />
+            </label>
+            <label>
+              <span>未來時間點</span>
+              <input id="future-time" placeholder="例如：20 年後" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel hidden" id="characters-step">
+          <div class="panel-heading">
+            <p>Step 03</p>
+            <h3>他者角色</h3>
+          </div>
+          <div class="character-list" id="character-list"></div>
+          <button class="secondary-button" id="add-character" type="button">新增第三位角色</button>
+        </section>
+
+        <section class="hidden" id="generate-step">
+          <div class="generate-grid">
+            <section class="panel controls-panel">
+              <div class="panel-heading">
+                <p>Step 04</p>
+                <h3>單筆生成控制</h3>
+              </div>
+              <label>
+                <span>選擇他者</span>
+                <select id="character-select"></select>
+              </label>
+
+              <div class="control-group">
+                <span>條件</span>
+                <div class="segmented" data-field="condition">
+                  <button class="active" data-value="real" type="button">真實</button>
+                  <button data-value="counterfactual" type="button">反事實</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span>時間</span>
+                <div class="segmented" data-field="timePoint">
+                  <button data-value="past" type="button">過去</button>
+                  <button class="active" data-value="present" type="button">現在</button>
+                  <button data-value="future" type="button">未來</button>
+                </div>
+              </div>
+
+              <p class="hint" id="generate-hint">完成事件、時間點與角色資料後，即可生成。</p>
+              <button class="primary-button" id="generate-button" type="button">生成這一筆</button>
+            </section>
+
+            <section class="postcard" aria-live="polite">
+              <div class="postcard-top">
+                <span id="postcard-status">尚未生成</span>
+                <span class="stamp">V1</span>
+              </div>
+              <h3 id="postcard-title">等待選擇</h3>
+              <p id="postcard-body">選定角色、條件與時間點後，按下生成。結果會以明信片形式出現在這裡。</p>
+            </section>
+          </div>
+
+          <section class="panel progress-panel">
+            <div class="panel-heading">
+              <p>Overview</p>
+              <h3>進度總覽</h3>
+            </div>
+            <div class="matrix" id="progress-matrix"></div>
+          </section>
+        </section>
+
+        <section class="panel hidden" id="review-step">
+          <div class="panel-heading">
+            <p>Step 05</p>
+            <h3>審閱內容</h3>
+          </div>
+          <div class="segmented compact" id="review-filter">
+            <button class="active" data-status="all" type="button">全部</button>
+            <button data-status="pending" type="button">pending</button>
+            <button data-status="approved" type="button">approved</button>
+            <button data-status="rejected" type="button">rejected</button>
+            <button data-status="regenerated" type="button">regenerated</button>
+          </div>
+          <div class="review-list" id="review-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <template id="character-template">
+      <article class="character-card">
+        <div class="card-title"></div>
+        <div class="form-grid three">
+          <label>
+            <span>名稱</span>
+            <input data-field="name" placeholder="例如：爸爸" />
+          </label>
+          <label>
+            <span>關係</span>
+            <input data-field="relationship" placeholder="例如：主要照顧者" />
+          </label>
+          <label>
+            <span>選角理由</span>
+            <input data-field="selectionReason" placeholder="為什麼選這個角色" />
+          </label>
+        </div>
+      </article>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
