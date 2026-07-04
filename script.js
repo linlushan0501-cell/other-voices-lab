@@ -3,7 +3,6 @@ const steps = [
   { id: "event", label: "事件", title: "事件與時間點" },
   { id: "characters", label: "角色", title: "他者角色" },
   { id: "generate", label: "生成", title: "單筆生成" },
-  { id: "review", label: "審閱", title: "審閱內容" },
 ];
 
 const conditions = ["real", "counterfactual"];
@@ -16,10 +15,6 @@ const labels = {
   past: "過去",
   present: "現在",
   future: "未來",
-  pending: "pending",
-  approved: "approved",
-  rejected: "rejected",
-  regenerated: "regenerated",
 };
 
 const defaultState = {
@@ -27,15 +22,16 @@ const defaultState = {
   selectedCondition: "real",
   selectedTimePoint: "present",
   selectedCharacterId: "character-1",
-  reviewFilter: "all",
   participant: {
     id: "participant-local",
     code: "",
     interviewDate: "",
     realEventDescription: "",
     counterfactualDescription: "",
-    pastTimePoint: "",
-    futureTimePoint: "",
+    realPastTimePoint: "",
+    realFutureTimePoint: "",
+    counterfactualPastTimePoint: "",
+    counterfactualFutureTimePoint: "",
     characters: [
       { id: "character-1", name: "", relationship: "", selectionReason: "" },
       { id: "character-2", name: "", relationship: "", selectionReason: "" },
@@ -46,12 +42,37 @@ const defaultState = {
 
 let state = loadState();
 
+function cloneDefaultState() {
+  return structuredClone(defaultState);
+}
+
 function loadState() {
   try {
     const value = localStorage.getItem(storageKey);
-    return value ? { ...structuredClone(defaultState), ...JSON.parse(value) } : structuredClone(defaultState);
+    const parsed = value ? JSON.parse(value) : {};
+    const next = {
+      ...cloneDefaultState(),
+      ...parsed,
+      participant: {
+        ...cloneDefaultState().participant,
+        ...(parsed.participant || {}),
+      },
+    };
+
+    const legacyPast = parsed.participant?.pastTimePoint || "";
+    const legacyFuture = parsed.participant?.futureTimePoint || "";
+    next.participant.realPastTimePoint ||= legacyPast;
+    next.participant.realFutureTimePoint ||= legacyFuture;
+    next.participant.counterfactualPastTimePoint ||= legacyPast;
+    next.participant.counterfactualFutureTimePoint ||= legacyFuture;
+
+    if (!steps.some((step) => step.id === next.activeStep)) {
+      next.activeStep = "participant";
+    }
+
+    return next;
   } catch {
-    return structuredClone(defaultState);
+    return cloneDefaultState();
   }
 }
 
@@ -72,7 +93,7 @@ function setStep(stepId) {
 function updateParticipant(field, value) {
   state.participant[field] = value;
   saveState();
-  renderGeneratedViewsOnly();
+  renderGeneratedViews();
 }
 
 function updateCharacter(id, field, value) {
@@ -85,7 +106,7 @@ function updateCharacter(id, field, value) {
   }
 
   saveState();
-  renderGeneratedViewsOnly();
+  renderGeneratedViews();
 }
 
 function getSelectedCharacter() {
@@ -95,10 +116,16 @@ function getSelectedCharacter() {
   );
 }
 
-function getTimePointValue(timePoint) {
-  if (timePoint === "past") return state.participant.pastTimePoint;
-  if (timePoint === "future") return state.participant.futureTimePoint;
-  return "此時此刻";
+function getScenarioDescription(condition) {
+  return condition === "real" ? state.participant.realEventDescription : state.participant.counterfactualDescription;
+}
+
+function getTimePointValue(condition, timePoint) {
+  if (timePoint === "present") return "此時此刻";
+  if (condition === "real" && timePoint === "past") return state.participant.realPastTimePoint;
+  if (condition === "real" && timePoint === "future") return state.participant.realFutureTimePoint;
+  if (condition === "counterfactual" && timePoint === "past") return state.participant.counterfactualPastTimePoint;
+  return state.participant.counterfactualFutureTimePoint;
 }
 
 function generationId(characterId, condition, timePoint) {
@@ -118,23 +145,20 @@ function getCurrentGeneration() {
 
 function hasRequiredGenerationData() {
   const character = getSelectedCharacter();
-  return Boolean(
-    state.participant.realEventDescription.trim() &&
-      state.participant.counterfactualDescription.trim() &&
-      state.participant.pastTimePoint.trim() &&
-      state.participant.futureTimePoint.trim() &&
-      character?.name.trim() &&
-      character?.relationship.trim(),
-  );
+  const condition = state.selectedCondition;
+  const timePoint = state.selectedTimePoint;
+  const hasScenario = Boolean(getScenarioDescription(condition).trim());
+  const hasTimePoint = timePoint === "present" || Boolean(getTimePointValue(condition, timePoint).trim());
+
+  return Boolean(hasScenario && hasTimePoint && character?.name.trim() && character?.relationship.trim());
 }
 
-function createMockGeneration(reviewerNotes = "") {
+function createMockGeneration() {
   const character = getSelectedCharacter();
   const condition = state.selectedCondition;
   const timePointType = state.selectedTimePoint;
-  const eventText =
-    condition === "real" ? state.participant.realEventDescription : state.participant.counterfactualDescription;
-  const timePointValue = getTimePointValue(timePointType);
+  const eventText = getScenarioDescription(condition);
+  const timePointValue = getTimePointValue(condition, timePointType);
 
   return {
     id: generationId(character.id, condition, timePointType),
@@ -148,18 +172,12 @@ function createMockGeneration(reviewerNotes = "") {
     timePointValue,
     generatedContent: `【${character.name || "未命名角色"}】我站在${labels[timePointType]}的「${timePointValue}」，以${character.relationship || "他者"}的位置看著這件事。${labels[condition]}情境裡，我知道的只有研究者提供的這些片段：「${eventText.slice(0, 72)}」。我不替參與者補上沒有說出口的背景，也不把自己的想像說成事實。被選進這段敘事，是因為${character.selectionReason || "我和參與者之間有需要被理解的關係"}。`,
     generationTimestamp: new Date().toISOString(),
-    promptVersion: "static-prototype-v1",
-    reviewStatus: reviewerNotes ? "regenerated" : "pending",
-    reviewerNotes,
-    approvedAt: null,
+    promptVersion: "static-prototype-v2",
   };
 }
 
 function upsertGeneration(generation) {
-  state.generations = [
-    ...state.generations.filter((item) => item.id !== generation.id),
-    generation,
-  ];
+  state.generations = [...state.generations.filter((item) => item.id !== generation.id), generation];
   saveState();
 }
 
@@ -170,13 +188,6 @@ function renderNavigation() {
         `<button class="${state.activeStep === step.id ? "active" : ""}" data-step="${step.id}" type="button"><span>${String(
           index + 1,
         ).padStart(2, "0")}</span>${step.label}</button>`,
-    )
-    .join("");
-
-  byId("step-flow").innerHTML = steps
-    .map(
-      (step) =>
-        `<button class="${state.activeStep === step.id ? "active" : ""}" data-step="${step.id}" type="button">${step.label}</button>`,
     )
     .join("");
 
@@ -198,8 +209,10 @@ function renderForms() {
   byId("interview-date").value = state.participant.interviewDate;
   byId("real-event").value = state.participant.realEventDescription;
   byId("counterfactual-event").value = state.participant.counterfactualDescription;
-  byId("past-time").value = state.participant.pastTimePoint;
-  byId("future-time").value = state.participant.futureTimePoint;
+  byId("real-past-time").value = state.participant.realPastTimePoint;
+  byId("real-future-time").value = state.participant.realFutureTimePoint;
+  byId("counterfactual-past-time").value = state.participant.counterfactualPastTimePoint;
+  byId("counterfactual-future-time").value = state.participant.counterfactualFutureTimePoint;
 }
 
 function renderCharacters() {
@@ -244,17 +257,17 @@ function renderGenerationControls() {
   const ready = hasRequiredGenerationData();
   byId("generate-button").disabled = !ready;
   byId("generate-hint").textContent = ready
-    ? "每次只會生成目前選定的角色、條件與時間。"
-    : "請先完成事件、時間點，並至少填好角色名稱與關係。";
+    ? "每次只會生成目前選定的角色、條件與時間，之後可直接寫入 Notion。"
+    : "請先完成目前條件需要的事件、時間點，並至少填好角色名稱與關係。";
 }
 
 function renderPostcard() {
   const generation = getCurrentGeneration();
   const character = getSelectedCharacter();
-  byId("postcard-status").textContent = generation ? generation.reviewStatus : "尚未生成";
+  byId("postcard-status").textContent = generation ? "已生成" : "尚未生成";
   byId("postcard-title").textContent = generation?.characterName || character?.name || "等待選擇";
   byId("postcard-body").textContent =
-    generation?.generatedContent || "選定角色、條件與時間點後，按下生成。結果會以明信片形式出現在這裡。";
+    generation?.generatedContent || "選定角色、條件與時間點後，按下生成。結果會先留在此原型，之後再接 Notion 儲存。";
 }
 
 function renderMatrix() {
@@ -266,7 +279,7 @@ function renderMatrix() {
             const generation = state.generations.find(
               (item) => item.characterId === character.id && item.condition === condition && item.timePointType === timePoint,
             );
-            const status = generation?.reviewStatus || "missing";
+            const status = generation ? "generated" : "missing";
             return `<div class="matrix-cell ${status}"><span>${labels[condition]}</span><strong>${labels[timePoint]}</strong></div>`;
           }),
         )
@@ -276,47 +289,27 @@ function renderMatrix() {
     .join("");
 }
 
-function renderReview() {
-  document.querySelectorAll("#review-filter button").forEach((button) => {
-    button.classList.toggle("active", button.dataset.status === state.reviewFilter);
-  });
-
-  const visible =
-    state.reviewFilter === "all"
-      ? state.generations
-      : state.generations.filter((generation) => generation.reviewStatus === state.reviewFilter);
-
-  byId("review-list").innerHTML =
-    visible.length === 0
-      ? `<p class="empty">目前沒有符合篩選的生成內容。</p>`
-      : visible
+function renderRecords() {
+  byId("record-list").innerHTML =
+    state.generations.length === 0
+      ? `<p class="empty">尚未生成任何內容。</p>`
+      : state.generations
           .map(
             (generation) => `
-        <article class="review-card" data-id="${generation.id}">
-          <header>
-            <div>
-              <p>${labels[generation.condition]} / ${labels[generation.timePointType]} / ${generation.timePointValue}</p>
-              <h3>${generation.characterName}</h3>
-            </div>
-            <span class="badge">${generation.reviewStatus}</span>
-          </header>
-          <textarea data-action="content">${generation.generatedContent}</textarea>
-          <input data-action="notes" value="${generation.reviewerNotes || ""}" placeholder="退回或重生原因" />
-          <div class="button-row">
-            <button class="primary-button" data-action="approve" type="button">核可</button>
-            <button class="secondary-button" data-action="reject" type="button">標記問題</button>
-            <button class="secondary-button" data-action="regenerate" type="button">退回重生</button>
-          </div>
+        <article class="record-card">
+          <p>${labels[generation.condition]} / ${labels[generation.timePointType]} / ${generation.timePointValue}</p>
+          <h4>${generation.characterName}</h4>
+          <p>${generation.generatedContent}</p>
         </article>`,
           )
           .join("");
 }
 
-function renderGeneratedViewsOnly() {
+function renderGeneratedViews() {
   renderGenerationControls();
   renderPostcard();
   renderMatrix();
-  renderReview();
+  renderRecords();
 }
 
 function render() {
@@ -324,7 +317,7 @@ function render() {
   renderStepVisibility();
   renderForms();
   renderCharacters();
-  renderGeneratedViewsOnly();
+  renderGeneratedViews();
 }
 
 function bindStaticEvents() {
@@ -334,8 +327,14 @@ function bindStaticEvents() {
   byId("counterfactual-event").addEventListener("input", (event) =>
     updateParticipant("counterfactualDescription", event.target.value),
   );
-  byId("past-time").addEventListener("input", (event) => updateParticipant("pastTimePoint", event.target.value));
-  byId("future-time").addEventListener("input", (event) => updateParticipant("futureTimePoint", event.target.value));
+  byId("real-past-time").addEventListener("input", (event) => updateParticipant("realPastTimePoint", event.target.value));
+  byId("real-future-time").addEventListener("input", (event) => updateParticipant("realFutureTimePoint", event.target.value));
+  byId("counterfactual-past-time").addEventListener("input", (event) =>
+    updateParticipant("counterfactualPastTimePoint", event.target.value),
+  );
+  byId("counterfactual-future-time").addEventListener("input", (event) =>
+    updateParticipant("counterfactualFutureTimePoint", event.target.value),
+  );
 
   byId("add-character").addEventListener("click", () => {
     if (state.participant.characters.length >= 3) return;
@@ -348,14 +347,14 @@ function bindStaticEvents() {
   byId("character-select").addEventListener("change", (event) => {
     state.selectedCharacterId = event.target.value;
     saveState();
-    renderGeneratedViewsOnly();
+    renderGeneratedViews();
   });
 
   document.querySelectorAll(".segmented[data-field='condition'] button").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedCondition = button.dataset.value;
       saveState();
-      renderGeneratedViewsOnly();
+      renderGeneratedViews();
     });
   });
 
@@ -363,7 +362,7 @@ function bindStaticEvents() {
     button.addEventListener("click", () => {
       state.selectedTimePoint = button.dataset.value;
       saveState();
-      renderGeneratedViewsOnly();
+      renderGeneratedViews();
     });
   });
 
@@ -375,70 +374,13 @@ function bindStaticEvents() {
     setTimeout(() => {
       upsertGeneration(createMockGeneration());
       button.textContent = "生成這一筆";
-      renderGeneratedViewsOnly();
-    }, 700);
-  });
-
-  byId("review-filter").addEventListener("click", (event) => {
-    if (!event.target.matches("button")) return;
-    state.reviewFilter = event.target.dataset.status;
-    saveState();
-    renderReview();
-  });
-
-  byId("review-list").addEventListener("input", (event) => {
-    const card = event.target.closest(".review-card");
-    if (!card) return;
-    const generation = state.generations.find((item) => item.id === card.dataset.id);
-    if (!generation) return;
-    if (event.target.dataset.action === "content") {
-      generation.generatedContent = event.target.value;
-      saveState();
-      renderPostcard();
-    }
-    if (event.target.dataset.action === "notes") {
-      generation.reviewerNotes = event.target.value;
-      saveState();
-    }
-  });
-
-  byId("review-list").addEventListener("click", (event) => {
-    if (!event.target.matches("button")) return;
-    const card = event.target.closest(".review-card");
-    const generation = state.generations.find((item) => item.id === card.dataset.id);
-    if (!generation) return;
-
-    if (event.target.dataset.action === "approve") {
-      generation.reviewStatus = "approved";
-      generation.approvedAt = new Date().toISOString();
-    }
-
-    if (event.target.dataset.action === "reject") {
-      generation.reviewStatus = "rejected";
-    }
-
-    if (event.target.dataset.action === "regenerate") {
-      const previousSelection = {
-        characterId: state.selectedCharacterId,
-        condition: state.selectedCondition,
-        timePoint: state.selectedTimePoint,
-      };
-      state.selectedCharacterId = generation.characterId;
-      state.selectedCondition = generation.condition;
-      state.selectedTimePoint = generation.timePointType;
-      upsertGeneration(createMockGeneration(generation.reviewerNotes || "研究者退回重新生成"));
-      state.selectedCharacterId = previousSelection.characterId;
-      state.selectedCondition = previousSelection.condition;
-      state.selectedTimePoint = previousSelection.timePoint;
-    }
-
-    saveState();
-    renderGeneratedViewsOnly();
+      renderGeneratedViews();
+    }, 650);
   });
 
   byId("reset-data").addEventListener("click", () => {
     if (!confirm("確定要清空目前原型資料？")) return;
-    state = structuredClone(defaultState);
+    state = cloneDefaultState();
     saveState();
     render();
   });
@@ -448,7 +390,7 @@ function bindStaticEvents() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "research-dashboard-export.json";
+    link.download = "other-voices-lab-export.json";
     link.click();
     URL.revokeObjectURL(url);
   });

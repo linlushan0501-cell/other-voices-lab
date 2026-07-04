@@ -3,27 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>虛構他者獨白 | Research Console</title>
+    <title>Other Voices Lab | 虛構他者獨白</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <main class="dashboard">
       <aside class="sidebar" aria-label="主要導覽">
         <div class="brand">
-          <p>Research Console</p>
+          <p>Other Voices Lab</p>
           <h1>虛構他者獨白</h1>
+          <span>Research prototype</span>
         </div>
         <nav class="nav" id="nav"></nav>
         <div class="sidebar-footer">
           <span class="status-dot"></span>
-          <span>Prototype v1</span>
+          <span>Static UI v2</span>
         </div>
       </aside>
 
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Front-end prototype</p>
+            <p class="eyebrow">Researcher dashboard</p>
             <h2 id="page-title">參與者資料</h2>
           </div>
           <div class="top-actions">
@@ -32,12 +33,10 @@
           </div>
         </header>
 
-        <div class="step-flow" id="step-flow"></div>
-
         <section class="panel" id="participant-step">
           <div class="panel-heading">
-            <p>Step 01</p>
-            <h3>參與者基本資料</h3>
+            <p>01 / Participant</p>
+            <h3>建立研究個案</h3>
           </div>
           <div class="form-grid">
             <label>
@@ -51,34 +50,55 @@
           </div>
         </section>
 
-        <section class="panel hidden" id="event-step">
-          <div class="panel-heading">
-            <p>Step 02</p>
-            <h3>事件與時間點</h3>
-          </div>
-          <div class="form-grid two">
-            <label>
-              <span>真實事件描述</span>
-              <textarea id="real-event" placeholder="輸入參與者敘述的真實關鍵事件"></textarea>
-            </label>
-            <label>
-              <span>What if 假設情境描述</span>
-              <textarea id="counterfactual-event" placeholder="輸入反事實情境，例如：如果當時沒有發生..."></textarea>
-            </label>
-            <label>
-              <span>過去時間點</span>
-              <input id="past-time" placeholder="例如：小學三年級" />
-            </label>
-            <label>
-              <span>未來時間點</span>
-              <input id="future-time" placeholder="例如：20 年後" />
-            </label>
+        <section class="hidden" id="event-step">
+          <div class="condition-grid">
+            <section class="panel condition-card">
+              <div class="panel-heading">
+                <p>02A / Real</p>
+                <h3>真實事件</h3>
+              </div>
+              <label>
+                <span>真實事件描述</span>
+                <textarea id="real-event" placeholder="輸入參與者敘述的真實關鍵事件"></textarea>
+              </label>
+              <div class="form-grid compact-grid">
+                <label>
+                  <span>真實事件的過去時間點</span>
+                  <input id="real-past-time" placeholder="例如：事件發生前一年" />
+                </label>
+                <label>
+                  <span>真實事件的未來時間點</span>
+                  <input id="real-future-time" placeholder="例如：十年後" />
+                </label>
+              </div>
+            </section>
+
+            <section class="panel condition-card">
+              <div class="panel-heading">
+                <p>02B / Counterfactual</p>
+                <h3>反事實情境</h3>
+              </div>
+              <label>
+                <span>What if 假設情境描述</span>
+                <textarea id="counterfactual-event" placeholder="輸入反事實情境，例如：如果當時沒有發生..."></textarea>
+              </label>
+              <div class="form-grid compact-grid">
+                <label>
+                  <span>反事實的過去時間點</span>
+                  <input id="counterfactual-past-time" placeholder="例如：另一個過去節點" />
+                </label>
+                <label>
+                  <span>反事實的未來時間點</span>
+                  <input id="counterfactual-future-time" placeholder="例如：平行時空的未來" />
+                </label>
+              </div>
+            </section>
           </div>
         </section>
 
         <section class="panel hidden" id="characters-step">
           <div class="panel-heading">
-            <p>Step 03</p>
+            <p>03 / Others</p>
             <h3>他者角色</h3>
           </div>
           <div class="character-list" id="character-list"></div>
@@ -89,8 +109,8 @@
           <div class="generate-grid">
             <section class="panel controls-panel">
               <div class="panel-heading">
-                <p>Step 04</p>
-                <h3>單筆生成控制</h3>
+                <p>04 / Generate</p>
+                <h3>單筆生成</h3>
               </div>
               <label>
                 <span>選擇他者</span>
@@ -121,35 +141,21 @@
             <section class="postcard" aria-live="polite">
               <div class="postcard-top">
                 <span id="postcard-status">尚未生成</span>
-                <span class="stamp">V1</span>
+                <span class="stamp">V2</span>
               </div>
               <h3 id="postcard-title">等待選擇</h3>
-              <p id="postcard-body">選定角色、條件與時間點後，按下生成。結果會以明信片形式出現在這裡。</p>
+              <p id="postcard-body">選定角色、條件與時間點後，按下生成。結果會先留在此原型，之後再接 Notion 儲存。</p>
             </section>
           </div>
 
           <section class="panel progress-panel">
             <div class="panel-heading">
-              <p>Overview</p>
-              <h3>進度總覽</h3>
+              <p>Generated records</p>
+              <h3>生成紀錄</h3>
             </div>
             <div class="matrix" id="progress-matrix"></div>
+            <div class="record-list" id="record-list"></div>
           </section>
-        </section>
-
-        <section class="panel hidden" id="review-step">
-          <div class="panel-heading">
-            <p>Step 05</p>
-            <h3>審閱內容</h3>
-          </div>
-          <div class="segmented compact" id="review-filter">
-            <button class="active" data-status="all" type="button">全部</button>
-            <button data-status="pending" type="button">pending</button>
-            <button data-status="approved" type="button">approved</button>
-            <button data-status="rejected" type="button">rejected</button>
-            <button data-status="regenerated" type="button">regenerated</button>
-          </div>
-          <div class="review-list" id="review-list"></div>
         </section>
       </section>
     </main>
