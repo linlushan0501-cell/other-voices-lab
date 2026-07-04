@@ -189,6 +189,14 @@ function generationId(participantId, characterId, condition, timePoint) {
   return `${participantId}-${characterId}-${condition}-${timePoint}`;
 }
 
+function hashText(value) {
+  return [...value].reduce((total, character) => total + character.charCodeAt(0), 0);
+}
+
+function pickVariant(items, seed, offset = 0) {
+  return items[(hashText(seed) + offset) % items.length];
+}
+
 function getCurrentGeneration() {
   const participant = getActiveParticipant();
   const character = getSelectedCharacter();
@@ -219,7 +227,67 @@ function createMockGeneration() {
   const timePointType = state.selectedTimePoint;
   const eventText = getScenarioDescription(condition);
   const timePointValue = getTimePointValue(condition, timePointType);
-  const temporalCue = timePointType === "present" ? "當下" : `「${timePointValue}」`;
+  const seed = generationId(participant.id, character.id, condition, timePointType);
+  const eventFragment = eventText.trim().slice(0, 56);
+  const roleName = character.name || "未命名角色";
+  const relationship = character.relationship || "這段關係";
+  const observation = pickVariant(
+    [
+      `我看到他把話講到一半又收回去，像是怕多講一句就會把自己弄得更狼狽。`,
+      `我記得他那天一直避開我的眼神，手上明明沒什麼事，卻反覆整理同一個地方。`,
+      `他笑得很快，快到我反而知道那不是沒事，是他不想讓場面變得太重。`,
+      `我注意到他停了一下，那個停頓很短，可是我知道他其實吞回去很多話。`,
+      `看到他把肩膀縮起來的時候，我心裡有點酸，因為那不是第一次了。`,
+    ],
+    seed,
+  );
+  const timeVoice = {
+    past: [
+      `回頭看${timePointValue ? `「${timePointValue}」` : "那之前"}，我才發現有些訊號其實很早就出現了。`,
+      `${timePointValue ? `在「${timePointValue}」那一段` : "在更早以前"}，他還沒有把自己逼到那麼緊，可是已經很少真正放鬆。`,
+      `如果從${timePointValue ? `「${timePointValue}」` : "前面那段時間"}說起，我最記得的是他總把難受講得很輕。`,
+    ],
+    present: [
+      `當下我沒有急著問，因為我知道他一被追問，就會立刻把話收乾淨。`,
+      `當下那個氣氛很薄，好像誰多碰一下，他就會把自己關起來。`,
+      `當下我其實想靠近一點，可是又怕我的關心變成另一種壓力。`,
+    ],
+    future: [
+      `後來到了${timePointValue ? `「${timePointValue}」` : "更後面"}，我還是會想起他那個表情。`,
+      `${timePointValue ? `「${timePointValue}」以後` : "很久以後"}，我才慢慢懂，他那時候要的不是答案，是有人真的站在他旁邊。`,
+      `再往後看，我覺得他會記得的不是誰說了什麼大道理，而是那時有沒有人願意等他一下。`,
+    ],
+  };
+  const conditionVoice =
+    condition === "counterfactual"
+      ? pickVariant(
+          [
+            `如果那時候換一種走法，他大概不會馬上變得輕鬆，但至少不用一路假裝自己撐得住。`,
+            `要是當時不是那樣發展，他可能還是會嘴硬，只是心裡不會那麼早就覺得自己被丟下。`,
+            `如果那個轉折沒有壓過來，我想他會多留一點力氣給自己，而不是急著證明他沒問題。`,
+          ],
+          seed,
+          2,
+        )
+      : pickVariant(
+          [
+            `我知道那不是小題大作，因為我看過他怎麼把難受藏成一句「還好」。`,
+            `他很少直接說自己受傷，所以我只能從那些小動作裡慢慢猜。`,
+            `我不是每次都懂他，可是那一刻我知道，他其實已經忍很久了。`,
+          ],
+          seed,
+          3,
+        );
+  const ending = pickVariant(
+    [
+      `以${relationship}的位置來說，我最放不下的，是我那時候有沒有真的看見他。`,
+      `我後來一直想，如果我能少講一點道理、多陪他一下，也許他會比較敢把話說完。`,
+      `所以我記住的不是完整經過，而是他那個樣子，還有我當時差一點就忽略的沉默。`,
+      `那句「${eventFragment || "他沒有說完的話"}」我到後來還會想起，因為裡面其實藏著很多他不敢直接要的東西。`,
+    ],
+    seed,
+    4,
+  );
 
   return {
     id: generationId(participant.id, character.id, condition, timePointType),
@@ -232,7 +300,7 @@ function createMockGeneration() {
     condition,
     timePointType,
     timePointValue,
-    generatedContent: `【${character.name || "未命名角色"}】在${temporalCue}，這件事對我來說不是旁人的故事，而是我也在其中的一段關係。我記得「${eventText.slice(0, 72)}」裡那些沒有被說完整的地方，也記得自己當時能做、不能做，和後來才慢慢明白的事。`,
+    generatedContent: `【${roleName}】${observation}${pickVariant(timeVoice[timePointType], seed, 1)}${conditionVoice}${ending}`,
     generationTimestamp: new Date().toISOString(),
     promptVersion: "static-prototype-v3",
   };
@@ -341,7 +409,7 @@ function renderPostcard() {
   byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
   byId("postcard-body").textContent =
     generation?.generatedContent ||
-    "【爸爸】那天我一直記得孩子說話時停下來的樣子。事情不是從旁邊看起來那麼簡單，我能說的，是我在那個關係裡感受到的責任、猶豫，和沒有說出口的擔心。";
+    "【爸爸】我看到他把杯子握得很緊，明明只是幾句話，他卻像怕自己一開口就會撐不住。當下我沒有馬上問，因為我知道他一被追問，就會把話收回去。";
 }
 
 function renderMatrix() {

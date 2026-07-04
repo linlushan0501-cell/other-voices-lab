@@ -16,6 +16,9 @@ assert.match(script, /participantId === participant\.id/, "Generated records sho
 assert.doesNotMatch(html + script, /此時此刻/, "The UI/mock output should not use the stiff phrase 此時此刻.");
 assert.doesNotMatch(html + script, /我站在/, "Mock monologues should not force a spatial time-travel opening.");
 assert.doesNotMatch(html + script, /聽完|聽到這段|第一個反應/, "Mock output should not sound like a listener commenting on the participant's story.");
+assert.doesNotMatch(html + script, /這件事對我來說|旁人的故事/, "Mock output should not use abstract template phrasing.");
+assert.match(script, /pickVariant/, "Mock output should vary wording instead of using one fixed public template.");
+assert.match(script, /我看到|我記得|我注意到/, "Mock output should start from natural observation language.");
 assert.doesNotMatch(html + script, /現在/, "Research-facing time labels should use 當下 instead of 現在.");
 assert.match(html + script, /當下/, "The present-time condition should be labeled 當下.");
 assert.match(html + script, /真實/, "The experimental condition should be labeled 真實.");
