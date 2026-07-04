@@ -219,7 +219,7 @@ function createMockGeneration() {
   const timePointType = state.selectedTimePoint;
   const eventText = getScenarioDescription(condition);
   const timePointValue = getTimePointValue(condition, timePointType);
-  const temporalCue = timePointType === "present" ? "這個當下" : `「${timePointValue}」那個時間點`;
+  const temporalCue = timePointType === "present" ? "當下" : `「${timePointValue}」`;
 
   return {
     id: generationId(participant.id, character.id, condition, timePointType),
@@ -232,7 +232,7 @@ function createMockGeneration() {
     condition,
     timePointType,
     timePointValue,
-    generatedContent: `【${character.name || "未命名角色"}】聽到這段${labels[condition]}，我在${temporalCue}最先想到的，是他那時候其實需要有人停下來聽他說完。「${eventText.slice(0, 72)}」這些片段已經夠重了，我不想替他補上沒有說出口的背景，只想從我和他的關係裡，把我能理解的部分說清楚。`,
+    generatedContent: `【${character.name || "未命名角色"}】在${temporalCue}，這件事對我來說不是旁人的故事，而是我也在其中的一段關係。我記得「${eventText.slice(0, 72)}」裡那些沒有被說完整的地方，也記得自己當時能做、不能做，和後來才慢慢明白的事。`,
     generationTimestamp: new Date().toISOString(),
     promptVersion: "static-prototype-v3",
   };
@@ -341,7 +341,7 @@ function renderPostcard() {
   byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
   byId("postcard-body").textContent =
     generation?.generatedContent ||
-    "【爸爸】聽完這段敘述，我第一個反應是想先確認孩子有沒有被好好理解。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接自動寫入 Notion。";
+    "【爸爸】那天我一直記得孩子說話時停下來的樣子。事情不是從旁邊看起來那麼簡單，我能說的，是我在那個關係裡感受到的責任、猶豫，和沒有說出口的擔心。";
 }
 
 function renderMatrix() {
