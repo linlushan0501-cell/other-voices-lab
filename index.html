@@ -10,26 +10,16 @@
     <main class="dashboard">
       <aside class="sidebar" aria-label="主要導覽">
         <div class="brand">
-          <p>Other Voices Lab</p>
-          <h1>虛構他者獨白</h1>
-          <span>Research prototype</span>
+          <h1>Other Voices Lab</h1>
+          <p>虛構他者獨白</p>
         </div>
         <nav class="nav" id="nav"></nav>
-        <div class="sidebar-footer">
-          <span class="status-dot"></span>
-          <span>Static UI v2</span>
-        </div>
       </aside>
 
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Researcher dashboard</p>
             <h2 id="page-title">參與者資料</h2>
-          </div>
-          <div class="top-actions">
-            <button class="ghost-button" id="export-json" type="button">匯出 JSON</button>
-            <button class="ghost-button danger" id="reset-data" type="button">清空資料</button>
           </div>
         </header>
 
@@ -54,20 +44,20 @@
           <div class="condition-grid">
             <section class="panel condition-card">
               <div class="panel-heading">
-                <p>02A / Real</p>
-                <h3>真實事件</h3>
+                <p>02A</p>
+                <h3>關鍵事件</h3>
               </div>
               <label>
-                <span>真實事件描述</span>
-                <textarea id="real-event" placeholder="輸入參與者敘述的真實關鍵事件"></textarea>
+                <span>關鍵事件描述</span>
+                <textarea id="real-event" placeholder="輸入參與者敘述的關鍵事件"></textarea>
               </label>
               <div class="form-grid compact-grid">
                 <label>
-                  <span>真實事件的過去時間點</span>
+                  <span>關鍵事件的過去時間點</span>
                   <input id="real-past-time" placeholder="例如：事件發生前一年" />
                 </label>
                 <label>
-                  <span>真實事件的未來時間點</span>
+                  <span>關鍵事件的未來時間點</span>
                   <input id="real-future-time" placeholder="例如：十年後" />
                 </label>
               </div>
@@ -75,7 +65,7 @@
 
             <section class="panel condition-card">
               <div class="panel-heading">
-                <p>02B / Counterfactual</p>
+                <p>02B</p>
                 <h3>反事實情境</h3>
               </div>
               <label>
@@ -98,18 +88,20 @@
 
         <section class="panel hidden" id="characters-step">
           <div class="panel-heading">
-            <p>03 / Others</p>
+            <p>03</p>
             <h3>他者角色</h3>
           </div>
           <div class="character-list" id="character-list"></div>
-          <button class="secondary-button" id="add-character" type="button">新增第三位角色</button>
+          <div class="panel-actions">
+            <button class="secondary-button" id="add-character" type="button">新增第三位角色</button>
+          </div>
         </section>
 
         <section class="hidden" id="generate-step">
           <div class="generate-grid">
             <section class="panel controls-panel">
               <div class="panel-heading">
-                <p>04 / Generate</p>
+                <p>04</p>
                 <h3>單筆生成</h3>
               </div>
               <label>
@@ -140,19 +132,20 @@
 
             <section class="postcard" aria-live="polite">
               <div class="postcard-top">
-                <span id="postcard-status">尚未生成</span>
+                <span id="postcard-status">示意</span>
                 <span class="stamp">V2</span>
               </div>
-              <h3 id="postcard-title">等待選擇</h3>
-              <p id="postcard-body">選定角色、條件與時間點後，按下生成。結果會先留在此原型，之後再接 Notion 儲存。</p>
+              <h3 id="postcard-title">爸爸（示意）</h3>
+              <p id="postcard-body">【爸爸】我站在現在的「此時此刻」，以主要照顧者的位置看著這件事。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接記錄到 Notion，不需要另外按儲存。</p>
             </section>
           </div>
 
           <section class="panel progress-panel">
             <div class="panel-heading">
-              <p>Generated records</p>
+              <p>自動記錄</p>
               <h3>生成紀錄</h3>
             </div>
+            <p class="section-note">下方矩陣只用來看哪些組合已生成；未來接上 Notion 後，每次生成完成會同步寫入 Notion database。</p>
             <div class="matrix" id="progress-matrix"></div>
             <div class="record-list" id="record-list"></div>
           </section>

@@ -9,7 +9,9 @@
   --dark: #23252c;
   --danger: #8f3d33;
   --generated: #dfe8df;
-  --shadow-soft: 0 12px 8px -8px rgba(62, 62, 62, 0.13);
+  --radius-panel: 18px;
+  --radius-control: 10px;
+  --shadow-soft: 0 10px 8px -10px rgba(62, 62, 62, 0.16);
   --shadow-pressed: inset 0 0 0 2px rgba(255, 255, 255, 0.08), inset 0 0 18px rgba(255, 255, 255, 0.06);
 }
 
@@ -38,10 +40,10 @@ button {
 
 .dashboard {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 20px;
   min-height: 100vh;
-  padding: 24px;
+  padding: 22px;
 }
 
 .sidebar {
@@ -49,9 +51,9 @@ button {
   top: 24px;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  height: calc(100vh - 48px);
+  height: calc(100vh - 44px);
   padding: 22px;
-  border-radius: 30px;
+  border-radius: var(--radius-panel);
   background: #232421;
   color: white;
   box-shadow: var(--shadow-soft), var(--shadow-pressed);
@@ -59,16 +61,15 @@ button {
 
 .brand {
   display: grid;
-  gap: 7px;
+  gap: 5px;
 }
 
 .brand p,
-.brand span,
 .eyebrow,
 .panel-heading p,
-.sidebar-footer,
 .hint,
 .empty,
+.section-note,
 .record-card p {
   margin: 0;
   color: var(--muted);
@@ -81,21 +82,16 @@ button {
 
 .brand h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 21px;
   line-height: 1.1;
   letter-spacing: 0;
-}
-
-.brand span,
-.sidebar-footer {
-  color: #aaa9a1;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .nav button,
@@ -114,7 +110,7 @@ button {
   grid-template-columns: 28px 1fr;
   gap: 10px;
   align-items: center;
-  min-height: 48px;
+  min-height: 44px;
   padding: 10px 14px;
   border-color: rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.08);
@@ -132,19 +128,6 @@ button {
   font-size: 13px;
 }
 
-.sidebar-footer {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #dfe8df;
-}
-
 .workspace {
   min-width: 0;
   max-width: 1120px;
@@ -153,21 +136,16 @@ button {
 }
 
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .topbar h2 {
-  margin: 5px 0 0;
-  font-size: 34px;
+  margin: 0;
+  font-size: 30px;
   line-height: 1.05;
   letter-spacing: 0;
 }
 
-.top-actions,
 .segmented,
 .button-row {
   display: flex;
@@ -175,7 +153,6 @@ button {
   gap: 10px;
 }
 
-.ghost-button,
 .primary-button,
 .secondary-button,
 .segmented button {
@@ -183,19 +160,11 @@ button {
   padding: 10px 16px;
 }
 
-.ghost-button {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.ghost-button.danger {
-  color: var(--danger);
-}
-
 .segmented {
   width: fit-content;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 24px;
   background: var(--control);
 }
 
@@ -227,11 +196,11 @@ button {
 
 .panel,
 .postcard {
-  border-radius: 26px;
+  border-radius: var(--radius-panel);
 }
 
 .panel {
-  padding: 24px;
+  padding: 22px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.86);
   box-shadow: var(--shadow-soft);
@@ -242,7 +211,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   align-items: baseline;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .panel-heading h3 {
@@ -295,7 +264,7 @@ textarea,
 select {
   width: 100%;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: var(--control);
   color: var(--ink);
   padding: 12px 14px;
@@ -319,19 +288,27 @@ select:focus {
 .record-list {
   display: grid;
   gap: 14px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .character-card,
 .record-card {
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 14px;
   background: var(--surface-soft);
 }
 
 .card-title {
   margin-bottom: 12px;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .generate-grid {
@@ -368,7 +345,7 @@ select:focus {
   width: 50px;
   height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .postcard h3 {
@@ -387,6 +364,11 @@ select:focus {
   overflow-x: auto;
 }
 
+.section-note {
+  margin: -4px 0 16px;
+  line-height: 1.5;
+}
+
 .matrix {
   display: grid;
   gap: 10px;
@@ -402,7 +384,7 @@ select:focus {
 .matrix-name,
 .matrix-cell {
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: white;
   padding: 10px;
 }
@@ -426,6 +408,11 @@ select:focus {
 .record-card {
   display: grid;
   gap: 8px;
+}
+
+.record-card.example {
+  border-style: dashed;
+  background: #fbfbf9;
 }
 
 .record-card h4 {

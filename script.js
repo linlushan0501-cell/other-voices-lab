@@ -10,7 +10,7 @@ const timePoints = ["past", "present", "future"];
 const storageKey = "research-monologue-dashboard-static-v1";
 
 const labels = {
-  real: "真實",
+  real: "關鍵事件",
   counterfactual: "反事實",
   past: "過去",
   present: "現在",
@@ -257,17 +257,18 @@ function renderGenerationControls() {
   const ready = hasRequiredGenerationData();
   byId("generate-button").disabled = !ready;
   byId("generate-hint").textContent = ready
-    ? "每次只會生成目前選定的角色、條件與時間，之後可直接寫入 Notion。"
+    ? "每次只會生成目前選定的角色、條件與時間。API 版會在生成完成後自動寫入 Notion。"
     : "請先完成目前條件需要的事件、時間點，並至少填好角色名稱與關係。";
 }
 
 function renderPostcard() {
   const generation = getCurrentGeneration();
   const character = getSelectedCharacter();
-  byId("postcard-status").textContent = generation ? "已生成" : "尚未生成";
-  byId("postcard-title").textContent = generation?.characterName || character?.name || "等待選擇";
+  byId("postcard-status").textContent = generation ? "已生成" : "示意";
+  byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
   byId("postcard-body").textContent =
-    generation?.generatedContent || "選定角色、條件與時間點後，按下生成。結果會先留在此原型，之後再接 Notion 儲存。";
+    generation?.generatedContent ||
+    "【爸爸】我站在現在的「此時此刻」，以主要照顧者的位置看著這件事。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接記錄到 Notion，不需要另外按儲存。";
 }
 
 function renderMatrix() {
@@ -292,7 +293,11 @@ function renderMatrix() {
 function renderRecords() {
   byId("record-list").innerHTML =
     state.generations.length === 0
-      ? `<p class="empty">尚未生成任何內容。</p>`
+      ? `<article class="record-card example">
+          <p>示意 / 關鍵事件 / 現在 / 此時此刻</p>
+          <h4>爸爸</h4>
+          <p>生成後，每一筆會像這樣列在這裡。正式串接後，這筆資料會同時寫入 Notion，不需要另外按「儲存」。</p>
+        </article>`
       : state.generations
           .map(
             (generation) => `
@@ -378,22 +383,6 @@ function bindStaticEvents() {
     }, 650);
   });
 
-  byId("reset-data").addEventListener("click", () => {
-    if (!confirm("確定要清空目前原型資料？")) return;
-    state = cloneDefaultState();
-    saveState();
-    render();
-  });
-
-  byId("export-json").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "other-voices-lab-export.json";
-    link.click();
-    URL.revokeObjectURL(url);
-  });
 }
 
 bindStaticEvents();
