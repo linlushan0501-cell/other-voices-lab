@@ -10,7 +10,7 @@ const timePoints = ["past", "present", "future"];
 const storageKey = "research-monologue-dashboard-static-v1";
 
 const labels = {
-  real: "關鍵事件",
+  real: "真實",
   counterfactual: "反事實",
   past: "過去",
   present: "當下",
@@ -24,7 +24,7 @@ function createCharacter(index) {
 function createParticipant(index) {
   return {
     id: `participant-${Date.now()}-${index}`,
-    code: index === 1 ? "" : `P-${String(index).padStart(3, "0")}`,
+    code: `P-${String(index).padStart(3, "0")}`,
     interviewDate: "",
     realEventDescription: "",
     counterfactualDescription: "",
@@ -58,6 +58,9 @@ function normalizeParticipant(participant, index = 1) {
   const next = { ...createParticipant(index), ...participant };
   const legacyPast = participant?.pastTimePoint || "";
   const legacyFuture = participant?.futureTimePoint || "";
+  if (!next.code?.trim()) {
+    next.code = `P-${String(index).padStart(3, "0")}`;
+  }
   next.realPastTimePoint ||= legacyPast;
   next.realFutureTimePoint ||= legacyFuture;
   next.counterfactualPastTimePoint ||= legacyPast;
@@ -266,10 +269,11 @@ function renderStepVisibility() {
 function renderParticipantSelect() {
   byId("participant-select").innerHTML = state.participants
     .map((participant, index) => {
-      const label = participant.code.trim() || `參與者 ${index + 1}`;
+      const label = participant.code.trim() || `P-${String(index + 1).padStart(3, "0")}`;
       return `<option value="${participant.id}" ${participant.id === state.activeParticipantId ? "selected" : ""}>${label}</option>`;
     })
     .join("");
+  byId("delete-participant").disabled = state.participants.length <= 1;
 }
 
 function renderForms() {
@@ -328,9 +332,6 @@ function renderGenerationControls() {
 
   const ready = hasRequiredGenerationData();
   byId("generate-button").disabled = !ready;
-  byId("generate-hint").textContent = ready
-    ? "每次只會生成目前選定的參與者、角色、條件與時間。API 版會在生成完成後自動寫入 Notion。"
-    : "請先完成目前條件需要的事件、時間點，並至少填好角色名稱與關係。";
 }
 
 function renderPostcard() {
@@ -410,6 +411,16 @@ function bindStaticEvents() {
     state.participants.push(participant);
     state.activeParticipantId = participant.id;
     state.selectedCharacterId = participant.characters[0].id;
+    saveState();
+    render();
+  });
+  byId("delete-participant").addEventListener("click", () => {
+    if (state.participants.length <= 1) return;
+    const participant = getActiveParticipant();
+    state.participants = state.participants.filter((item) => item.id !== participant.id);
+    state.generations = state.generations.filter((generation) => generation.participantId !== participant.id);
+    state.activeParticipantId = state.participants[0].id;
+    state.selectedCharacterId = state.participants[0].characters[0]?.id || "";
     saveState();
     render();
   });

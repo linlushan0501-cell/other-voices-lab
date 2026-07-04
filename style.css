@@ -2,15 +2,15 @@
   --background: #efefed;
   --surface: #ffffff;
   --surface-soft: #f7f7f5;
-  --control: #f0f0ee;
+  --control: #f1f1ef;
   --ink: #1e1f22;
   --muted: #777973;
   --line: #deded8;
   --dark: #23252c;
   --danger: #8f3d33;
   --generated: #dfe8df;
-  --radius-panel: 18px;
-  --radius-control: 10px;
+  --radius-panel: 14px;
+  --radius-control: 8px;
   --shadow-soft: 0 10px 8px -10px rgba(62, 62, 62, 0.16);
   --shadow-pressed: inset 0 0 0 2px rgba(255, 255, 255, 0.08), inset 0 0 18px rgba(255, 255, 255, 0.06);
 }
@@ -40,9 +40,11 @@ button {
 
 .dashboard {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 246px minmax(0, 1fr);
   gap: 20px;
+  max-width: 1240px;
   min-height: 100vh;
+  margin: 0 auto;
   padding: 22px;
 }
 
@@ -130,7 +132,6 @@ button {
 
 .workspace {
   min-width: 0;
-  max-width: 1120px;
   width: 100%;
   padding: 4px 0 40px;
 }
@@ -242,6 +243,15 @@ button {
   border-bottom: 1px solid var(--line);
 }
 
+.participant-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.danger-button {
+  color: var(--danger);
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -281,6 +291,21 @@ select {
   outline: none;
 }
 
+select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 25px) 50%,
+    calc(100% - 18px) 50%;
+  background-repeat: no-repeat;
+  background-size:
+    7px 7px,
+    7px 7px;
+  padding-right: 52px;
+}
+
 textarea {
   min-height: 154px;
   resize: vertical;
@@ -305,7 +330,7 @@ select:focus {
 .record-card {
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-soft);
 }
 
@@ -355,7 +380,7 @@ select:focus {
   width: 50px;
   height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 12px;
+  border-radius: 9px;
 }
 
 .postcard h3 {

@@ -33,7 +33,10 @@
               <span>目前參與者</span>
               <select id="participant-select"></select>
             </label>
-            <button class="secondary-button" id="add-participant" type="button">新增參與者</button>
+            <div class="participant-actions">
+              <button class="secondary-button" id="add-participant" type="button">新增參與者</button>
+              <button class="secondary-button danger-button" id="delete-participant" type="button">刪除參與者</button>
+            </div>
           </div>
           <div class="form-grid">
             <label>
@@ -119,7 +122,7 @@
               <div class="control-group">
                 <span>條件</span>
                 <div class="segmented" data-field="condition">
-                  <button class="active" data-value="real" type="button">關鍵事件</button>
+                  <button class="active" data-value="real" type="button">真實</button>
                   <button data-value="counterfactual" type="button">反事實</button>
                 </div>
               </div>
@@ -133,7 +136,6 @@
                 </div>
               </div>
 
-              <p class="hint" id="generate-hint">完成事件、時間點與角色資料後，即可生成。</p>
               <button class="primary-button" id="generate-button" type="button">生成這一筆</button>
             </section>
 
@@ -152,7 +154,6 @@
               <p>自動記錄</p>
               <h3>生成紀錄</h3>
             </div>
-            <p class="section-note">下方矩陣只用來看哪些組合已生成；未來接上 Notion 後，每次生成完成會同步寫入 Notion database。</p>
             <div class="matrix" id="progress-matrix"></div>
             <div class="record-list" id="record-list"></div>
           </section>
