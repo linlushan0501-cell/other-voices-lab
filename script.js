@@ -13,18 +13,18 @@ const labels = {
   real: "關鍵事件",
   counterfactual: "反事實",
   past: "過去",
-  present: "現在",
+  present: "當下",
   future: "未來",
 };
 
-const defaultState = {
-  activeStep: "participant",
-  selectedCondition: "real",
-  selectedTimePoint: "present",
-  selectedCharacterId: "character-1",
-  participant: {
-    id: "participant-local",
-    code: "",
+function createCharacter(index) {
+  return { id: `character-${index}`, name: "", relationship: "", selectionReason: "" };
+}
+
+function createParticipant(index) {
+  return {
+    id: `participant-${Date.now()}-${index}`,
+    code: index === 1 ? "" : `P-${String(index).padStart(3, "0")}`,
     interviewDate: "",
     realEventDescription: "",
     counterfactualDescription: "",
@@ -32,11 +32,19 @@ const defaultState = {
     realFutureTimePoint: "",
     counterfactualPastTimePoint: "",
     counterfactualFutureTimePoint: "",
-    characters: [
-      { id: "character-1", name: "", relationship: "", selectionReason: "" },
-      { id: "character-2", name: "", relationship: "", selectionReason: "" },
-    ],
-  },
+    characters: [createCharacter(1), createCharacter(2)],
+  };
+}
+
+const firstParticipant = createParticipant(1);
+
+const defaultState = {
+  activeStep: "participant",
+  activeParticipantId: firstParticipant.id,
+  selectedCondition: "real",
+  selectedTimePoint: "present",
+  selectedCharacterId: "character-1",
+  participants: [firstParticipant],
   generations: [],
 };
 
@@ -46,28 +54,44 @@ function cloneDefaultState() {
   return structuredClone(defaultState);
 }
 
+function normalizeParticipant(participant, index = 1) {
+  const next = { ...createParticipant(index), ...participant };
+  const legacyPast = participant?.pastTimePoint || "";
+  const legacyFuture = participant?.futureTimePoint || "";
+  next.realPastTimePoint ||= legacyPast;
+  next.realFutureTimePoint ||= legacyFuture;
+  next.counterfactualPastTimePoint ||= legacyPast;
+  next.counterfactualFutureTimePoint ||= legacyFuture;
+  next.characters = next.characters?.length ? next.characters : [createCharacter(1), createCharacter(2)];
+  return next;
+}
+
 function loadState() {
   try {
     const value = localStorage.getItem(storageKey);
     const parsed = value ? JSON.parse(value) : {};
+    const participants = parsed.participants?.length
+      ? parsed.participants.map(normalizeParticipant)
+      : [normalizeParticipant(parsed.participant || {}, 1)];
+
     const next = {
       ...cloneDefaultState(),
       ...parsed,
-      participant: {
-        ...cloneDefaultState().participant,
-        ...(parsed.participant || {}),
-      },
+      participants,
+      activeParticipantId: parsed.activeParticipantId || participants[0].id,
+      generations: parsed.generations || [],
     };
 
-    const legacyPast = parsed.participant?.pastTimePoint || "";
-    const legacyFuture = parsed.participant?.futureTimePoint || "";
-    next.participant.realPastTimePoint ||= legacyPast;
-    next.participant.realFutureTimePoint ||= legacyFuture;
-    next.participant.counterfactualPastTimePoint ||= legacyPast;
-    next.participant.counterfactualFutureTimePoint ||= legacyFuture;
+    if (!participants.some((participant) => participant.id === next.activeParticipantId)) {
+      next.activeParticipantId = participants[0].id;
+    }
 
     if (!steps.some((step) => step.id === next.activeStep)) {
       next.activeStep = "participant";
+    }
+
+    if (!getActiveParticipantFromState(next).characters.some((character) => character.id === next.selectedCharacterId)) {
+      next.selectedCharacterId = getActiveParticipantFromState(next).characters[0]?.id || "";
     }
 
     return next;
@@ -84,25 +108,55 @@ function byId(id) {
   return document.getElementById(id);
 }
 
+function getActiveParticipantFromState(sourceState) {
+  return (
+    sourceState.participants.find((participant) => participant.id === sourceState.activeParticipantId) ||
+    sourceState.participants[0]
+  );
+}
+
+function getActiveParticipant() {
+  return getActiveParticipantFromState(state);
+}
+
+function getActiveGenerations() {
+  const participant = getActiveParticipant();
+  return state.generations.filter((generation) => generation.participantId === participant.id);
+}
+
 function setStep(stepId) {
   state.activeStep = stepId;
   saveState();
   render();
 }
 
+function setActiveParticipant(participantId) {
+  state.activeParticipantId = participantId;
+  const participant = getActiveParticipant();
+  state.selectedCharacterId = participant.characters[0]?.id || "";
+  saveState();
+  render();
+}
+
 function updateParticipant(field, value) {
-  state.participant[field] = value;
+  const participant = getActiveParticipant();
+  state.participants = state.participants.map((item) =>
+    item.id === participant.id ? { ...item, [field]: value } : item,
+  );
   saveState();
   renderGeneratedViews();
 }
 
 function updateCharacter(id, field, value) {
-  state.participant.characters = state.participant.characters.map((character) =>
+  const participant = getActiveParticipant();
+  const characters = participant.characters.map((character) =>
     character.id === id ? { ...character, [field]: value } : character,
   );
 
-  if (!state.participant.characters.some((character) => character.id === state.selectedCharacterId)) {
-    state.selectedCharacterId = state.participant.characters[0]?.id || "";
+  state.participants = state.participants.map((item) => (item.id === participant.id ? { ...item, characters } : item));
+
+  if (!characters.some((character) => character.id === state.selectedCharacterId)) {
+    state.selectedCharacterId = characters[0]?.id || "";
   }
 
   saveState();
@@ -110,33 +164,35 @@ function updateCharacter(id, field, value) {
 }
 
 function getSelectedCharacter() {
-  return (
-    state.participant.characters.find((character) => character.id === state.selectedCharacterId) ||
-    state.participant.characters[0]
-  );
+  const participant = getActiveParticipant();
+  return participant.characters.find((character) => character.id === state.selectedCharacterId) || participant.characters[0];
 }
 
 function getScenarioDescription(condition) {
-  return condition === "real" ? state.participant.realEventDescription : state.participant.counterfactualDescription;
+  const participant = getActiveParticipant();
+  return condition === "real" ? participant.realEventDescription : participant.counterfactualDescription;
 }
 
 function getTimePointValue(condition, timePoint) {
-  if (timePoint === "present") return "此時此刻";
-  if (condition === "real" && timePoint === "past") return state.participant.realPastTimePoint;
-  if (condition === "real" && timePoint === "future") return state.participant.realFutureTimePoint;
-  if (condition === "counterfactual" && timePoint === "past") return state.participant.counterfactualPastTimePoint;
-  return state.participant.counterfactualFutureTimePoint;
+  const participant = getActiveParticipant();
+  if (timePoint === "present") return "當下";
+  if (condition === "real" && timePoint === "past") return participant.realPastTimePoint;
+  if (condition === "real" && timePoint === "future") return participant.realFutureTimePoint;
+  if (condition === "counterfactual" && timePoint === "past") return participant.counterfactualPastTimePoint;
+  return participant.counterfactualFutureTimePoint;
 }
 
-function generationId(characterId, condition, timePoint) {
-  return `${characterId}-${condition}-${timePoint}`;
+function generationId(participantId, characterId, condition, timePoint) {
+  return `${participantId}-${characterId}-${condition}-${timePoint}`;
 }
 
 function getCurrentGeneration() {
+  const participant = getActiveParticipant();
   const character = getSelectedCharacter();
   if (!character) return null;
   return state.generations.find(
     (generation) =>
+      generation.participantId === participant.id &&
       generation.characterId === character.id &&
       generation.condition === state.selectedCondition &&
       generation.timePointType === state.selectedTimePoint,
@@ -154,15 +210,18 @@ function hasRequiredGenerationData() {
 }
 
 function createMockGeneration() {
+  const participant = getActiveParticipant();
   const character = getSelectedCharacter();
   const condition = state.selectedCondition;
   const timePointType = state.selectedTimePoint;
   const eventText = getScenarioDescription(condition);
   const timePointValue = getTimePointValue(condition, timePointType);
+  const temporalCue = timePointType === "present" ? "這個當下" : `「${timePointValue}」那個時間點`;
 
   return {
-    id: generationId(character.id, condition, timePointType),
-    participantId: state.participant.id,
+    id: generationId(participant.id, character.id, condition, timePointType),
+    participantId: participant.id,
+    participantCode: participant.code,
     characterId: character.id,
     characterName: character.name || "未命名角色",
     relationship: character.relationship,
@@ -170,9 +229,9 @@ function createMockGeneration() {
     condition,
     timePointType,
     timePointValue,
-    generatedContent: `【${character.name || "未命名角色"}】我站在${labels[timePointType]}的「${timePointValue}」，以${character.relationship || "他者"}的位置看著這件事。${labels[condition]}情境裡，我知道的只有研究者提供的這些片段：「${eventText.slice(0, 72)}」。我不替參與者補上沒有說出口的背景，也不把自己的想像說成事實。被選進這段敘事，是因為${character.selectionReason || "我和參與者之間有需要被理解的關係"}。`,
+    generatedContent: `【${character.name || "未命名角色"}】聽到這段${labels[condition]}，我在${temporalCue}最先想到的，是他那時候其實需要有人停下來聽他說完。「${eventText.slice(0, 72)}」這些片段已經夠重了，我不想替他補上沒有說出口的背景，只想從我和他的關係裡，把我能理解的部分說清楚。`,
     generationTimestamp: new Date().toISOString(),
-    promptVersion: "static-prototype-v2",
+    promptVersion: "static-prototype-v3",
   };
 }
 
@@ -204,23 +263,35 @@ function renderStepVisibility() {
   });
 }
 
+function renderParticipantSelect() {
+  byId("participant-select").innerHTML = state.participants
+    .map((participant, index) => {
+      const label = participant.code.trim() || `參與者 ${index + 1}`;
+      return `<option value="${participant.id}" ${participant.id === state.activeParticipantId ? "selected" : ""}>${label}</option>`;
+    })
+    .join("");
+}
+
 function renderForms() {
-  byId("participant-code").value = state.participant.code;
-  byId("interview-date").value = state.participant.interviewDate;
-  byId("real-event").value = state.participant.realEventDescription;
-  byId("counterfactual-event").value = state.participant.counterfactualDescription;
-  byId("real-past-time").value = state.participant.realPastTimePoint;
-  byId("real-future-time").value = state.participant.realFutureTimePoint;
-  byId("counterfactual-past-time").value = state.participant.counterfactualPastTimePoint;
-  byId("counterfactual-future-time").value = state.participant.counterfactualFutureTimePoint;
+  const participant = getActiveParticipant();
+  renderParticipantSelect();
+  byId("participant-code").value = participant.code;
+  byId("interview-date").value = participant.interviewDate;
+  byId("real-event").value = participant.realEventDescription;
+  byId("counterfactual-event").value = participant.counterfactualDescription;
+  byId("real-past-time").value = participant.realPastTimePoint;
+  byId("real-future-time").value = participant.realFutureTimePoint;
+  byId("counterfactual-past-time").value = participant.counterfactualPastTimePoint;
+  byId("counterfactual-future-time").value = participant.counterfactualFutureTimePoint;
 }
 
 function renderCharacters() {
+  const participant = getActiveParticipant();
   const list = byId("character-list");
   const template = byId("character-template");
   list.innerHTML = "";
 
-  state.participant.characters.forEach((character, index) => {
+  participant.characters.forEach((character, index) => {
     const node = template.content.cloneNode(true);
     const card = node.querySelector(".character-card");
     card.dataset.characterId = character.id;
@@ -232,12 +303,13 @@ function renderCharacters() {
     list.appendChild(node);
   });
 
-  byId("add-character").disabled = state.participant.characters.length >= 3;
+  byId("add-character").disabled = participant.characters.length >= 3;
 }
 
 function renderGenerationControls() {
+  const participant = getActiveParticipant();
   const select = byId("character-select");
-  select.innerHTML = state.participant.characters
+  select.innerHTML = participant.characters
     .map(
       (character) =>
         `<option value="${character.id}" ${character.id === state.selectedCharacterId ? "selected" : ""}>${
@@ -257,7 +329,7 @@ function renderGenerationControls() {
   const ready = hasRequiredGenerationData();
   byId("generate-button").disabled = !ready;
   byId("generate-hint").textContent = ready
-    ? "每次只會生成目前選定的角色、條件與時間。API 版會在生成完成後自動寫入 Notion。"
+    ? "每次只會生成目前選定的參與者、角色、條件與時間。API 版會在生成完成後自動寫入 Notion。"
     : "請先完成目前條件需要的事件、時間點，並至少填好角色名稱與關係。";
 }
 
@@ -268,17 +340,22 @@ function renderPostcard() {
   byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
   byId("postcard-body").textContent =
     generation?.generatedContent ||
-    "【爸爸】我站在現在的「此時此刻」，以主要照顧者的位置看著這件事。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接記錄到 Notion，不需要另外按儲存。";
+    "【爸爸】聽完這段敘述，我第一個反應是想先確認孩子有沒有被好好理解。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接自動寫入 Notion。";
 }
 
 function renderMatrix() {
-  byId("progress-matrix").innerHTML = state.participant.characters
+  const participant = getActiveParticipant();
+  byId("progress-matrix").innerHTML = participant.characters
     .map((character) => {
       const cells = conditions
         .flatMap((condition) =>
           timePoints.map((timePoint) => {
             const generation = state.generations.find(
-              (item) => item.characterId === character.id && item.condition === condition && item.timePointType === timePoint,
+              (item) =>
+                item.participantId === participant.id &&
+                item.characterId === character.id &&
+                item.condition === condition &&
+                item.timePointType === timePoint,
             );
             const status = generation ? "generated" : "missing";
             return `<div class="matrix-cell ${status}"><span>${labels[condition]}</span><strong>${labels[timePoint]}</strong></div>`;
@@ -291,14 +368,15 @@ function renderMatrix() {
 }
 
 function renderRecords() {
+  const activeGenerations = getActiveGenerations();
   byId("record-list").innerHTML =
-    state.generations.length === 0
+    activeGenerations.length === 0
       ? `<article class="record-card example">
-          <p>示意 / 關鍵事件 / 現在 / 此時此刻</p>
+          <p>示意 / 關鍵事件 / 當下</p>
           <h4>爸爸</h4>
-          <p>生成後，每一筆會像這樣列在這裡。正式串接後，這筆資料會同時寫入 Notion，不需要另外按「儲存」。</p>
+          <p>生成後，每一筆會像這樣列在這裡。正式串接後，這筆資料會同時自動寫入 Notion。</p>
         </article>`
-      : state.generations
+      : activeGenerations
           .map(
             (generation) => `
         <article class="record-card">
@@ -326,6 +404,16 @@ function render() {
 }
 
 function bindStaticEvents() {
+  byId("participant-select").addEventListener("change", (event) => setActiveParticipant(event.target.value));
+  byId("add-participant").addEventListener("click", () => {
+    const participant = createParticipant(state.participants.length + 1);
+    state.participants.push(participant);
+    state.activeParticipantId = participant.id;
+    state.selectedCharacterId = participant.characters[0].id;
+    saveState();
+    render();
+  });
+
   byId("participant-code").addEventListener("input", (event) => updateParticipant("code", event.target.value));
   byId("interview-date").addEventListener("input", (event) => updateParticipant("interviewDate", event.target.value));
   byId("real-event").addEventListener("input", (event) => updateParticipant("realEventDescription", event.target.value));
@@ -342,9 +430,10 @@ function bindStaticEvents() {
   );
 
   byId("add-character").addEventListener("click", () => {
-    if (state.participant.characters.length >= 3) return;
-    const id = `character-${state.participant.characters.length + 1}`;
-    state.participant.characters.push({ id, name: "", relationship: "", selectionReason: "" });
+    const participant = getActiveParticipant();
+    if (participant.characters.length >= 3) return;
+    const characters = [...participant.characters, createCharacter(participant.characters.length + 1)];
+    state.participants = state.participants.map((item) => (item.id === participant.id ? { ...item, characters } : item));
     saveState();
     render();
   });
@@ -382,7 +471,6 @@ function bindStaticEvents() {
       renderGeneratedViews();
     }, 650);
   });
-
 }
 
 bindStaticEvents();

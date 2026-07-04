@@ -232,6 +232,16 @@ button {
   gap: 16px;
 }
 
+.participant-tools {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -448,7 +458,8 @@ select:focus {
   }
 
   .form-grid,
-  .form-grid.three {
+  .form-grid.three,
+  .participant-tools {
     grid-template-columns: 1fr;
   }
 

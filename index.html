@@ -28,6 +28,13 @@
             <p>01 / Participant</p>
             <h3>建立研究個案</h3>
           </div>
+          <div class="participant-tools">
+            <label>
+              <span>目前參與者</span>
+              <select id="participant-select"></select>
+            </label>
+            <button class="secondary-button" id="add-participant" type="button">新增參與者</button>
+          </div>
           <div class="form-grid">
             <label>
               <span>參與者代號</span>
@@ -112,7 +119,7 @@
               <div class="control-group">
                 <span>條件</span>
                 <div class="segmented" data-field="condition">
-                  <button class="active" data-value="real" type="button">真實</button>
+                  <button class="active" data-value="real" type="button">關鍵事件</button>
                   <button data-value="counterfactual" type="button">反事實</button>
                 </div>
               </div>
@@ -121,7 +128,7 @@
                 <span>時間</span>
                 <div class="segmented" data-field="timePoint">
                   <button data-value="past" type="button">過去</button>
-                  <button class="active" data-value="present" type="button">現在</button>
+                  <button class="active" data-value="present" type="button">當下</button>
                   <button data-value="future" type="button">未來</button>
                 </div>
               </div>
@@ -136,7 +143,7 @@
                 <span class="stamp">V2</span>
               </div>
               <h3 id="postcard-title">爸爸（示意）</h3>
-              <p id="postcard-body">【爸爸】我站在現在的「此時此刻」，以主要照顧者的位置看著這件事。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接記錄到 Notion，不需要另外按儲存。</p>
+              <p id="postcard-body">【爸爸】我聽完這段敘述，第一個反應是想先確認孩子有沒有被好好理解。這裡會顯示生成後的完整獨白；串接 API 後，生成完成會直接自動寫入 Notion。</p>
             </section>
           </div>
 
