@@ -306,6 +306,44 @@ function createMockGeneration() {
   };
 }
 
+function createGenerationRequest() {
+  const participant = getActiveParticipant();
+  const character = getSelectedCharacter();
+  const condition = state.selectedCondition;
+  const timePointType = state.selectedTimePoint;
+  const timePointValue = getTimePointValue(condition, timePointType);
+
+  return {
+    id: generationId(participant.id, character.id, condition, timePointType),
+    participantId: participant.id,
+    participant_id: participant.code,
+    characterId: character.id,
+    character: character.name,
+    relationship: character.relationship,
+    selection_reason: character.selectionReason,
+    condition,
+    time_point_type: timePointType,
+    time_point_label: timePointValue,
+    event_description: getScenarioDescription(condition),
+    prompt_version: "openai-notion-v1",
+  };
+}
+
+async function createApiGeneration() {
+  const response = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(createGenerationRequest()),
+  });
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "生成失敗，請稍後再試。");
+  }
+
+  return payload.generation;
+}
+
 function upsertGeneration(generation) {
   state.generations = [...state.generations.filter((item) => item.id !== generation.id), generation];
   saveState();
@@ -539,16 +577,24 @@ function bindStaticEvents() {
     });
   });
 
-  byId("generate-button").addEventListener("click", () => {
+  byId("generate-button").addEventListener("click", async () => {
     if (!hasRequiredGenerationData()) return;
     const button = byId("generate-button");
     button.disabled = true;
     button.textContent = "生成中...";
-    setTimeout(() => {
-      upsertGeneration(createMockGeneration());
-      button.textContent = "生成這一筆";
+    byId("postcard-status").textContent = "生成中";
+    byId("postcard-body").textContent = "正在呼叫 OpenAI，完成後會自動寫入 Notion。";
+
+    try {
+      upsertGeneration(await createApiGeneration());
       renderGeneratedViews();
-    }, 650);
+    } catch (error) {
+      byId("postcard-status").textContent = "生成失敗";
+      byId("postcard-body").textContent = error.message;
+      button.disabled = false;
+    } finally {
+      button.textContent = "生成這一筆";
+    }
   });
 }
 
