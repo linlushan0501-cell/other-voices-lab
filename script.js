@@ -327,7 +327,7 @@ function createGenerationRequest() {
     event_description: getScenarioDescription(condition),
     real_event_description: participant.realEventDescription,
     counterfactual_event_description: participant.counterfactualDescription,
-    prompt_version: "openai-notion-v2",
+    prompt_version: "openai-notion-v3",
   };
 }
 
