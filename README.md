@@ -63,4 +63,4 @@ prompt_version        text
 
 ## Vercel
 
-把 repository 匯入 Vercel 後，先在 Project Settings 設定上述環境變數，再 redeploy。更新程式後，commit 並 push 到 GitHub，Vercel 會自動重新部署。
+把 repository 匯入 Vercel 後，先在 Project Settings 設定上述環境變數，再 redeploy。更新程式後，commit 並 push 到 GitHub，Vercel 會自動重新部署最新 commit。
