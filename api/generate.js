@@ -2,6 +2,8 @@ const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const NOTION_PAGES_URL = "https://api.notion.com/v1/pages";
 const NOTION_VERSION = "2026-03-11";
 const PROMPT_VERSION = "openai-notion-v3";
+const PROMPT_VERSION_REASON =
+  "v3: 避免複述使用者輸入的敘事內文；要求物件、場景與日常細節必須有角色脈絡；增加獨白形式、口吻與語氣變化。";
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -155,6 +157,7 @@ async function createNotionPage(record) {
     ["time_point_label", record.time_point_label],
     ["character", record.character],
     ["prompt_version", record.prompt_version],
+    ["prompt_version_reason", record.prompt_version_reason],
     ["generated_text", record.generated_text],
     ["generated_image_url", record.generated_image_url || ""],
     ["timestamp", record.timestamp],
@@ -208,6 +211,7 @@ async function createNotionTableRow(record, notionKey, databaseId) {
     "image URL": { url: record.generated_image_url || null },
     time: { date: { start: record.timestamp } },
     prompt_version: { rich_text: notionRichText(record.prompt_version) },
+    prompt_version_reason: { rich_text: notionRichText(record.prompt_version_reason) },
   };
 
   if (record.generated_image_url) {
@@ -263,6 +267,7 @@ export default async function handler(request, response) {
       real_event_description: trimText(body.real_event_description, 1600),
       counterfactual_event_description: trimText(body.counterfactual_event_description, 1600),
       prompt_version: body.prompt_version || PROMPT_VERSION,
+      prompt_version_reason: trimText(body.prompt_version_reason || PROMPT_VERSION_REASON, 500),
       generated_image_url: "",
       timestamp: new Date().toISOString(),
     };
@@ -295,6 +300,7 @@ export default async function handler(request, response) {
         generatedImageUrl: record.generated_image_url,
         generationTimestamp: record.timestamp,
         promptVersion: record.prompt_version,
+        promptVersionReason: record.prompt_version_reason,
         notionUrl: notion_url,
       },
     });

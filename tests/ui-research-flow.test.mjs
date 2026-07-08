@@ -27,3 +27,4 @@ assert.doesNotMatch(html + script, /請先完成目前條件/, "The UI should no
 
 assert.match(html + script, /自動寫入 Notion/, "The UI should clarify that API mode writes to Notion automatically.");
 assert.doesNotMatch(html + script, /核可|退回|重生|審閱/, "The experiment UI should not imply subjective review/regeneration.");
+assert.match(html, /<span class="stamp">V3<\/span>/, "The UI version stamp should match the current prompt version.");

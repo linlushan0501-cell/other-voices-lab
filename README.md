@@ -52,6 +52,7 @@ image                 files and media
 image URL             url
 time                  date
 prompt_version        text
+prompt_version_reason text
 ```
 
 生成流程：

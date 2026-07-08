@@ -328,6 +328,8 @@ function createGenerationRequest() {
     real_event_description: participant.realEventDescription,
     counterfactual_event_description: participant.counterfactualDescription,
     prompt_version: "openai-notion-v3",
+    prompt_version_reason:
+      "v3: 避免複述使用者輸入的敘事內文；要求物件、場景與日常細節必須有角色脈絡；增加獨白形式、口吻與語氣變化。",
   };
 }
 
