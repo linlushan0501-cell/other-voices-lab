@@ -18,14 +18,15 @@ assert.match(api, /generated_image_url/, "The Notion record payload should inclu
 assert.match(api, /database_id/, "The Notion table path should accept the database ID copied from the Notion table URL.");
 assert.match(api, /participant_id:\s*\{\s*title:/, "The Notion table row should use participant_id as the title column.");
 assert.match(api, /condition:\s*\{\s*select:/, "The Notion table row should write condition as a select.");
-assert.match(api, /time_point_type:\s*\{\s*select:/, "The Notion table row should write the condition label into the configured time_point_type select.");
-assert.match(api, /time_point_label:\s*\{\s*rich_text:/, "The Notion table row should write time_point_label as rich text.");
+assert.match(api, /time_point_type:\s*\{\s*select:\s*\{\s*name:\s*timeCategoryLabel/s, "The Notion table row should write 過去/當下/未來 into time_point_type.");
+assert.match(api, /time_point_label:\s*\{\s*rich_text:\s*notionRichText\(record\.time_point_label\)/, "The Notion table row should write the user's time label text into time_point_label.");
 assert.match(api, /"image URL":\s*\{\s*url:/, "The Notion table row should use the configured image URL column.");
 assert.match(api, /time:\s*\{\s*date:/, "The Notion table row should write time as a date column.");
 assert.match(api, /反事實不是角色本身的反事實/, "The prompt should clarify that counterfactual applies to the event scenario, not the character.");
 assert.match(api, /不要直接說出時間點標籤/, "The prompt should prevent literal time-label exposition.");
 assert.match(api, /不要用「如果.*」作為開頭/, "The prompt should avoid starting by reciting counterfactual settings.");
 assert.match(api, /past.*present.*future/s, "The prompt should vary perspective rules by time point.");
+assert.match(api, /present：當下是 2026 年現在/, "The prompt should treat present as the 2026 present, not the original event moment.");
 
 assert.match(script, /fetch\("\/api\/generate"/, "The browser should call the Vercel function instead of only using mock data.");
 assert.match(script, /participant_id/, "The browser should send participant_id to the API.");

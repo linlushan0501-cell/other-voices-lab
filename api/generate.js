@@ -61,7 +61,7 @@ function buildPrompt(record) {
     record.condition === "counterfactual" ? record.real_event_description : record.counterfactual_event_description;
   const timePointGuidance = {
     past: "past：把時間點當成角色當時所在的場景。寫出那時已經能看見的細節、預感、關係張力；不要用回顧報告腔。",
-    present: "present：直接站在事件當下。讓角色正在看見、聽見、忍住、靠近或退開；不要解釋設定。",
+    present: "present：當下是 2026 年現在，不是原始事件發生當下。真實當下是 2026 現在的真實情境；反事實當下是 2026 現在的反事實情境。",
     future: "future：把未來時間點當成已經抵達的生活現場。寫後來留下的痕跡與關係變化；不要寫「到了某年」或預測句。",
   };
 
@@ -197,8 +197,8 @@ async function createNotionTableRow(record, notionKey, databaseId) {
   const properties = {
     participant_id: { title: notionTitle(record.participant_id) },
     condition: { select: { name: conditionLabel } },
-    time_point_type: { select: { name: conditionLabel } },
-    time_point_label: { rich_text: notionRichText(timeCategoryLabel) },
+    time_point_type: { select: { name: timeCategoryLabel } },
+    time_point_label: { rich_text: notionRichText(record.time_point_label) },
     character: { rich_text: notionRichText(record.character) },
     generated_text: { rich_text: notionRichText(record.generated_text) },
     "image URL": { url: record.generated_image_url || null },
