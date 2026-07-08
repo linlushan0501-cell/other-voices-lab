@@ -8,6 +8,10 @@ const steps = [
 const conditions = ["real", "counterfactual"];
 const timePoints = ["past", "present", "future"];
 const storageKey = "research-monologue-dashboard-static-v1";
+const promptVersion = "openai-notion-v3";
+const promptVersionReason =
+  "v3: 避免複述使用者輸入的敘事內文；要求物件、場景與日常細節必須有角色脈絡；增加獨白形式、口吻與語氣變化。";
+const promptVersionReasonKey = `${storageKey}-${promptVersion}-reason`;
 
 const labels = {
   real: "真實",
@@ -312,6 +316,7 @@ function createGenerationRequest() {
   const condition = state.selectedCondition;
   const timePointType = state.selectedTimePoint;
   const timePointValue = getTimePointValue(condition, timePointType);
+  const shouldRecordPromptVersionReason = localStorage.getItem(promptVersionReasonKey) !== "recorded";
 
   return {
     id: generationId(participant.id, character.id, condition, timePointType),
@@ -327,22 +332,26 @@ function createGenerationRequest() {
     event_description: getScenarioDescription(condition),
     real_event_description: participant.realEventDescription,
     counterfactual_event_description: participant.counterfactualDescription,
-    prompt_version: "openai-notion-v3",
-    prompt_version_reason:
-      "v3: 避免複述使用者輸入的敘事內文；要求物件、場景與日常細節必須有角色脈絡；增加獨白形式、口吻與語氣變化。",
+    prompt_version: promptVersion,
+    prompt_version_reason: shouldRecordPromptVersionReason ? promptVersionReason : "",
   };
 }
 
 async function createApiGeneration() {
+  const request = createGenerationRequest();
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(createGenerationRequest()),
+    body: JSON.stringify(request),
   });
 
   const payload = await response.json();
   if (!response.ok) {
     throw new Error(payload.error || "生成失敗，請稍後再試。");
+  }
+
+  if (request.prompt_version_reason) {
+    localStorage.setItem(promptVersionReasonKey, "recorded");
   }
 
   return payload.generation;

@@ -22,8 +22,9 @@ assert.match(api, /time_point_type:\s*\{\s*select:\s*\{\s*name:\s*timeCategoryLa
 assert.match(api, /time_point_label:\s*\{\s*rich_text:\s*notionRichText\(record\.time_point_label\)/, "The Notion table row should write the user's time label text into time_point_label.");
 assert.match(api, /"image URL":\s*\{\s*url:/, "The Notion table row should use the configured image URL column.");
 assert.match(api, /time:\s*\{\s*date:/, "The Notion table row should write time as a date column.");
-assert.match(api, /PROMPT_VERSION_REASON/, "The API should keep a default reason for the current prompt version.");
-assert.match(api, /prompt_version_reason:\s*\{\s*rich_text:\s*notionRichText\(record\.prompt_version_reason\)/, "The Notion table row should write the prompt version reason.");
+assert.match(api, /prompt_version_reason:\s*\{\s*rich_text:\s*notionOptionalRichText\(record\.prompt_version_reason\)/, "The Notion table row should write the prompt version reason only when present.");
+assert.match(api, /prompt_version_reason:\s*trimText\(body\.prompt_version_reason,\s*500\)/, "The API should only write a version reason when the request sends one.");
+assert.doesNotMatch(api, /body\.prompt_version_reason\s*\|\|/, "The API should not repeat the version reason on every generated row by default.");
 assert.match(api, /反事實不是角色本身的反事實/, "The prompt should clarify that counterfactual applies to the event scenario, not the character.");
 assert.match(api, /不要直接說出時間點標籤/, "The prompt should prevent literal time-label exposition.");
 assert.match(api, /不要用「如果.*」作為開頭/, "The prompt should avoid starting by reciting counterfactual settings.");
@@ -38,5 +39,7 @@ assert.match(script, /participant_id/, "The browser should send participant_id t
 assert.match(script, /time_point_type/, "The browser should send time_point_type to the API.");
 assert.match(script, /prompt_version/, "The browser should send prompt_version to the API.");
 assert.match(script, /prompt_version_reason/, "The browser should send the reason for the current prompt version.");
+assert.match(script, /localStorage\.getItem\(promptVersionReasonKey\)/, "The browser should remember whether the current version reason has already been recorded.");
+assert.match(script, /localStorage\.setItem\(promptVersionReasonKey,\s*"recorded"\)/, "The browser should mark the version reason as recorded after a successful generation.");
 assert.match(script, /real_event_description/, "The browser should send the real event description for contrast.");
 assert.match(script, /counterfactual_event_description/, "The browser should send the counterfactual event description for contrast.");
