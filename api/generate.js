@@ -1,7 +1,7 @@
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const NOTION_PAGES_URL = "https://api.notion.com/v1/pages";
 const NOTION_VERSION = "2026-03-11";
-const PROMPT_VERSION = "openai-notion-v2";
+const PROMPT_VERSION = "openai-notion-v3";
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -86,6 +86,10 @@ function buildPrompt(record) {
     "不要每次都用同一種句型。依角色關係調整距離感：親密角色可以有遲疑、責備、心疼；較遠角色可以有克制、旁觀、誤解。",
     "避免研究摘要、診斷、人生建議、道德評判。不要把症狀或團體反應講成通用模板。",
     "直接進入第一人稱現場，可以稱呼參與者為「你」，但要符合角色關係。",
+    "不要把使用者輸入的敘事內文整段換句話重述；先理解事件、關係和情緒位置，再只挑角色此刻真的會注意、誤解、迴避或說出口的部分。",
+    "物件、場景或日常細節可以出現，但必須有角色原因：它能暴露職務、關係、時間狀態或情緒防衛。不要反覆使用咖啡、桌子、紙箱、滑鼠、冷掉等可替換道具模板。",
+    "每次選擇一種不同的獨白形式，例如壓抑短句、碎念式辯解、很冷靜的交代、突然漏出的責備、沒說出口的告白、命令式自我控制、記憶片段拼接。形式要貼合角色，不要在文中說明你選了哪一種。",
+    "句子長短、停頓、稱呼方式和情緒外露程度要隨角色改變；不要每段都用「我把...」「其實我...」「我只是...」「我怕...」的固定推進。",
     "",
     "本次生成資料：",
     `參與者代號：${record.participant_id}`,

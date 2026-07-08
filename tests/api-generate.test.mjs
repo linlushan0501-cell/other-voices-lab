@@ -27,6 +27,9 @@ assert.match(api, /不要直接說出時間點標籤/, "The prompt should preven
 assert.match(api, /不要用「如果.*」作為開頭/, "The prompt should avoid starting by reciting counterfactual settings.");
 assert.match(api, /past.*present.*future/s, "The prompt should vary perspective rules by time point.");
 assert.match(api, /present：當下是 2026 年現在/, "The prompt should treat present as the 2026 present, not the original event moment.");
+assert.match(api, /不要把使用者輸入的敘事內文整段換句話重述/, "The prompt should prevent paraphrasing the user's source text as the monologue.");
+assert.match(api, /物件、場景或日常細節可以出現，但必須有角色原因/, "The prompt should allow grounded details while preventing repeated prop templates.");
+assert.match(api, /每次選擇一種不同的獨白形式/, "The prompt should require varied monologue forms instead of one repeated structure.");
 
 assert.match(script, /fetch\("\/api\/generate"/, "The browser should call the Vercel function instead of only using mock data.");
 assert.match(script, /participant_id/, "The browser should send participant_id to the API.");
