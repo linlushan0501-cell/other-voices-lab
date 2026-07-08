@@ -14,8 +14,14 @@ assert.match(api, /process\.env\.NOTION_PARENT_PAGE_ID/, "The API function shoul
 assert.match(api, /https:\/\/api\.openai\.com\/v1\/responses/, "The API function should call OpenAI Responses API.");
 assert.match(api, /https:\/\/api\.notion\.com\/v1\/pages/, "The API function should create a Notion page record.");
 assert.match(api, /generated_image_url/, "The Notion record payload should include generated_image_url even when blank.");
+assert.match(api, /反事實不是角色本身的反事實/, "The prompt should clarify that counterfactual applies to the event scenario, not the character.");
+assert.match(api, /不要直接說出時間點標籤/, "The prompt should prevent literal time-label exposition.");
+assert.match(api, /不要用「如果.*」作為開頭/, "The prompt should avoid starting by reciting counterfactual settings.");
+assert.match(api, /past.*present.*future/s, "The prompt should vary perspective rules by time point.");
 
 assert.match(script, /fetch\("\/api\/generate"/, "The browser should call the Vercel function instead of only using mock data.");
 assert.match(script, /participant_id/, "The browser should send participant_id to the API.");
 assert.match(script, /time_point_type/, "The browser should send time_point_type to the API.");
 assert.match(script, /prompt_version/, "The browser should send prompt_version to the API.");
+assert.match(script, /real_event_description/, "The browser should send the real event description for contrast.");
+assert.match(script, /counterfactual_event_description/, "The browser should send the counterfactual event description for contrast.");

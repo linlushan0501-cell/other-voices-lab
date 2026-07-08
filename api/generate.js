@@ -1,7 +1,7 @@
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const NOTION_PAGES_URL = "https://api.notion.com/v1/pages";
 const NOTION_VERSION = "2022-06-28";
-const PROMPT_VERSION = "openai-notion-v1";
+const PROMPT_VERSION = "openai-notion-v2";
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -36,23 +36,50 @@ function extractOpenAiText(payload) {
 function buildPrompt(record) {
   const conditionLabel = record.condition === "counterfactual" ? "反事實" : "真實";
   const timeLabel = record.time_point_type === "present" ? "當下" : record.time_point_label;
+  const selectedScenario =
+    record.condition === "counterfactual"
+      ? record.counterfactual_event_description || record.event_description
+      : record.real_event_description || record.event_description;
+  const contrastScenario =
+    record.condition === "counterfactual" ? record.real_event_description : record.counterfactual_event_description;
+  const timePointGuidance = {
+    past: "past：把時間點當成角色當時所在的場景。寫出那時已經能看見的細節、預感、關係張力；不要用回顧報告腔。",
+    present: "present：直接站在事件當下。讓角色正在看見、聽見、忍住、靠近或退開；不要解釋設定。",
+    future: "future：把未來時間點當成已經抵達的生活現場。寫後來留下的痕跡與關係變化；不要寫「到了某年」或預測句。",
+  };
 
   return [
-    "你是研究工具中的文字生成助手。",
-    "請用繁體中文，生成一段第一人稱的虛構他者獨白。",
-    "聲音要自然、具體、像角色在回想或理解參與者，不要像研究摘要。",
-    "請避免診斷、避免過度解釋心理狀態，也不要替參與者做道德判斷。",
+    "任務：生成一段繁體中文的第一人稱虛構他者獨白。",
+    "敘事者是「角色」本人，不是研究者，也不是參與者。角色要用自己的關係位置、知道的事情、語氣和盲點說話。",
+    "反事實不是角色本身的反事實；反事實只代表「關鍵事件情境」改成使用者輸入的反事實版本。角色仍然是同一個敘事視角。",
+    "真實條件只根據真實關鍵事件；反事實條件只根據反事實關鍵事件。不要把兩個情境混成角色自己的如果人生。",
     "",
+    "時間處理：",
+    timePointGuidance.past,
+    timePointGuidance.present,
+    timePointGuidance.future,
+    `本次要使用的時間類型：${record.time_point_type}`,
+    `本次時間點標籤：${timeLabel}`,
+    "不要直接說出時間點標籤；把它轉成場景裡自然存在的痕跡、身體感、日常細節或關係變化。",
+    "",
+    "語氣與結構限制：",
+    "不要用「如果...」作為開頭，也不要用「我想，到了...」「在某年...」「假如我是...」這種把設定念出來的句子。",
+    "第一句必須直接進入角色的身體動作、感官細節、正在忍住的話，或對參與者的具體反應。",
+    "不要說明你正在使用真實、反事實、過去、當下、未來這些欄位。",
+    "不要每次都用同一種句型。依角色關係調整距離感：親密角色可以有遲疑、責備、心疼；較遠角色可以有克制、旁觀、誤解。",
+    "避免研究摘要、診斷、人生建議、道德評判。不要把症狀或團體反應講成通用模板。",
+    "直接進入第一人稱現場，可以稱呼參與者為「你」，但要符合角色關係。",
+    "",
+    "本次生成資料：",
     `參與者代號：${record.participant_id}`,
     `條件：${conditionLabel}`,
-    `時間點類型：${record.time_point_type}`,
-    `時間點標籤：${timeLabel}`,
     `角色：${record.character}`,
-    `關係：${record.relationship || "-"}`,
+    `角色關係：${record.relationship || "-"}`,
     `選角理由：${record.selection_reason || "-"}`,
-    `事件描述：${record.event_description}`,
+    `本次應採用的事件情境：${selectedScenario}`,
+    `另一個情境僅供區分，不可混用：${contrastScenario || "-"}`,
     "",
-    "輸出限制：只輸出獨白正文，約 180 到 260 字。開頭可使用角色視角，但不要加標題或條列。",
+    "輸出限制：只輸出獨白正文，約 160 到 240 字。不要加標題、括號註解、欄位名稱或條列。",
   ].join("\n");
 }
 
@@ -159,6 +186,8 @@ export default async function handler(request, response) {
       relationship: trimText(body.relationship, 240),
       selection_reason: trimText(body.selection_reason, 500),
       event_description: trimText(body.event_description, 1600),
+      real_event_description: trimText(body.real_event_description, 1600),
+      counterfactual_event_description: trimText(body.counterfactual_event_description, 1600),
       prompt_version: body.prompt_version || PROMPT_VERSION,
       generated_image_url: "",
       timestamp: new Date().toISOString(),

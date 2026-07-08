@@ -325,7 +325,9 @@ function createGenerationRequest() {
     time_point_type: timePointType,
     time_point_label: timePointValue,
     event_description: getScenarioDescription(condition),
-    prompt_version: "openai-notion-v1",
+    real_event_description: participant.realEventDescription,
+    counterfactual_event_description: participant.counterfactualDescription,
+    prompt_version: "openai-notion-v2",
   };
 }
 
