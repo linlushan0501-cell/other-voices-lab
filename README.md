@@ -43,9 +43,9 @@ Notion 資料表欄位需包含：
 
 ```txt
 participant_id        title
-condition             text
+condition             select: 真實, 反事實
 time_point_type       select: 真實, 反事實
-time_point_label      select: 過去, 當下, 未來
+time_point_label      text
 character             text
 generated_text        text
 image                 files and media

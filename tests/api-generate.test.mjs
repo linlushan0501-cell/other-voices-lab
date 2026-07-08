@@ -16,12 +16,12 @@ assert.match(api, /https:\/\/api\.openai\.com\/v1\/responses/, "The API function
 assert.match(api, /https:\/\/api\.notion\.com\/v1\/pages/, "The API function should create a Notion page record.");
 assert.match(api, /generated_image_url/, "The Notion record payload should include generated_image_url even when blank.");
 assert.match(api, /database_id/, "The Notion table path should accept the database ID copied from the Notion table URL.");
-assert.match(api, /participant_id.*title/s, "The Notion table row should use participant_id as the title column.");
-assert.match(api, /condition.*rich_text/s, "The Notion table row should write condition as text.");
-assert.match(api, /time_point_type.*select/s, "The Notion table row should write the condition label into the configured time_point_type select.");
-assert.match(api, /time_point_label.*select/s, "The Notion table row should write the time label into the configured time_point_label select.");
-assert.match(api, /image URL.*url/s, "The Notion table row should use the configured image URL column.");
-assert.match(api, /time.*date/s, "The Notion table row should write time as a date column.");
+assert.match(api, /participant_id:\s*\{\s*title:/, "The Notion table row should use participant_id as the title column.");
+assert.match(api, /condition:\s*\{\s*select:/, "The Notion table row should write condition as a select.");
+assert.match(api, /time_point_type:\s*\{\s*select:/, "The Notion table row should write the condition label into the configured time_point_type select.");
+assert.match(api, /time_point_label:\s*\{\s*rich_text:/, "The Notion table row should write time_point_label as rich text.");
+assert.match(api, /"image URL":\s*\{\s*url:/, "The Notion table row should use the configured image URL column.");
+assert.match(api, /time:\s*\{\s*date:/, "The Notion table row should write time as a date column.");
 assert.match(api, /反事實不是角色本身的反事實/, "The prompt should clarify that counterfactual applies to the event scenario, not the character.");
 assert.match(api, /不要直接說出時間點標籤/, "The prompt should prevent literal time-label exposition.");
 assert.match(api, /不要用「如果.*」作為開頭/, "The prompt should avoid starting by reciting counterfactual settings.");
