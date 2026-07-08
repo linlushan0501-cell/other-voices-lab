@@ -1,6 +1,6 @@
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const NOTION_PAGES_URL = "https://api.notion.com/v1/pages";
-const NOTION_VERSION = "2022-06-28";
+const NOTION_VERSION = "2026-03-11";
 const PROMPT_VERSION = "openai-notion-v2";
 
 function sendJson(response, statusCode, payload) {
@@ -16,6 +16,23 @@ function trimText(value, maxLength = 1900) {
 
 function notionRichText(value) {
   return [{ type: "text", text: { content: trimText(value) || "-" } }];
+}
+
+function notionTitle(value) {
+  return [{ type: "text", text: { content: trimText(value, 240) || "Generated record" } }];
+}
+
+function getConditionLabel(condition) {
+  return condition === "counterfactual" ? "反事實" : "真實";
+}
+
+function getTimePointLabel(timePointType) {
+  const labels = {
+    past: "過去",
+    present: "當下",
+    future: "未來",
+  };
+  return labels[timePointType] || timePointType;
 }
 
 function extractOpenAiText(payload) {
@@ -34,7 +51,7 @@ function extractOpenAiText(payload) {
 }
 
 function buildPrompt(record) {
-  const conditionLabel = record.condition === "counterfactual" ? "反事實" : "真實";
+  const conditionLabel = getConditionLabel(record.condition);
   const timeLabel = record.time_point_type === "present" ? "當下" : record.time_point_label;
   const selectedScenario =
     record.condition === "counterfactual"
@@ -111,14 +128,19 @@ async function createOpenAiText(record) {
 
 async function createNotionPage(record) {
   const notionKey = process.env.NOTION_API_KEY;
+  const dataSourceId = process.env.NOTION_DATA_SOURCE_ID;
   const parentPageId = process.env.NOTION_PARENT_PAGE_ID;
 
   if (!notionKey) {
     throw new Error("Missing NOTION_API_KEY.");
   }
 
+  if (dataSourceId) {
+    return createNotionTableRow(record, notionKey, dataSourceId);
+  }
+
   if (!parentPageId) {
-    throw new Error("Missing NOTION_PARENT_PAGE_ID.");
+    throw new Error("Missing NOTION_DATA_SOURCE_ID or NOTION_PARENT_PAGE_ID.");
   }
 
   const title = `${record.participant_id} / ${record.condition} / ${record.time_point_type} / ${record.character}`;
@@ -144,7 +166,7 @@ async function createNotionPage(record) {
     body: JSON.stringify({
       parent: { page_id: parentPageId },
       properties: {
-        title: [{ type: "text", text: { content: title } }],
+        title: notionTitle(title),
       },
       children: [
         {
@@ -164,6 +186,54 @@ async function createNotionPage(record) {
   const payload = await response.json();
   if (!response.ok) {
     throw new Error(payload.message || "Notion page creation failed.");
+  }
+
+  return payload.url || "";
+}
+
+async function createNotionTableRow(record, notionKey, dataSourceId) {
+  const conditionLabel = getConditionLabel(record.condition);
+  const timeCategoryLabel = getTimePointLabel(record.time_point_type);
+  const properties = {
+    participant_id: { title: notionTitle(record.participant_id) },
+    condition: { rich_text: notionRichText(conditionLabel) },
+    time_point_type: { select: { name: conditionLabel } },
+    time_point_label: { select: { name: timeCategoryLabel } },
+    character: { rich_text: notionRichText(record.character) },
+    generated_text: { rich_text: notionRichText(record.generated_text) },
+    "image URL": { url: record.generated_image_url || null },
+    time: { date: { start: record.timestamp } },
+    prompt_version: { rich_text: notionRichText(record.prompt_version) },
+  };
+
+  if (record.generated_image_url) {
+    properties.image = {
+      files: [
+        {
+          name: "generated image",
+          type: "external",
+          external: { url: record.generated_image_url },
+        },
+      ],
+    };
+  }
+
+  const response = await fetch(NOTION_PAGES_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${notionKey}`,
+      "Content-Type": "application/json",
+      "Notion-Version": NOTION_VERSION,
+    },
+    body: JSON.stringify({
+      parent: { data_source_id: dataSourceId },
+      properties,
+    }),
+  });
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.message || "Notion table row creation failed.");
   }
 
   return payload.url || "";

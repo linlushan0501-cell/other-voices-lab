@@ -34,13 +34,31 @@ OPENAI_TEXT_MODEL=gpt-5.5
 OPENAI_IMAGE_MODEL=gpt-image-2
 NOTION_API_KEY=
 NOTION_PARENT_PAGE_ID=
+NOTION_DATA_SOURCE_ID=
+```
+
+`NOTION_DATA_SOURCE_ID` 是 Notion 資料表 / database 的 ID。設定後，每次生成會寫成資料表的一列。若沒有設定，才會退回到 `NOTION_PARENT_PAGE_ID` 底下建立一般 Notion page。
+
+Notion 資料表欄位需包含：
+
+```txt
+participant_id        title
+condition             text
+time_point_type       select: 真實, 反事實
+time_point_label      select: 過去, 當下, 未來
+character             text
+generated_text        text
+image                 files and media
+image URL             url
+time                  date
+prompt_version        text
 ```
 
 生成流程：
 
 1. 前端呼叫 `/api/generate`。
 2. Vercel Function 組 prompt 並呼叫 OpenAI Responses API。
-3. 生成完成後，自動在 `NOTION_PARENT_PAGE_ID` 底下建立 Notion page 紀錄。
+3. 生成完成後，優先寫入 `NOTION_DATA_SOURCE_ID` 指定的 Notion 表格。
 4. 前端收到結果並更新 localStorage 與生成紀錄。
 
 ## Vercel
