@@ -15,7 +15,7 @@ assert.match(api, /process\.env\.NOTION_DATA_SOURCE_ID/, "The API function shoul
 assert.match(api, /https:\/\/api\.openai\.com\/v1\/responses/, "The API function should call OpenAI Responses API.");
 assert.match(api, /https:\/\/api\.notion\.com\/v1\/pages/, "The API function should create a Notion page record.");
 assert.match(api, /generated_image_url/, "The Notion record payload should include generated_image_url even when blank.");
-assert.match(api, /data_source_id/, "The Notion table path should create pages under a data source.");
+assert.match(api, /database_id/, "The Notion table path should accept the database ID copied from the Notion table URL.");
 assert.match(api, /participant_id.*title/s, "The Notion table row should use participant_id as the title column.");
 assert.match(api, /condition.*rich_text/s, "The Notion table row should write condition as text.");
 assert.match(api, /time_point_type.*select/s, "The Notion table row should write the condition label into the configured time_point_type select.");

@@ -37,7 +37,7 @@ NOTION_PARENT_PAGE_ID=
 NOTION_DATA_SOURCE_ID=
 ```
 
-`NOTION_DATA_SOURCE_ID` 是 Notion 資料表 / database 的 ID。設定後，每次生成會寫成資料表的一列。若沒有設定，才會退回到 `NOTION_PARENT_PAGE_ID` 底下建立一般 Notion page。
+`NOTION_DATA_SOURCE_ID` 是 Notion 資料表 / database 的 ID，也就是表格網址中 `?v=` 前面的 32 碼。設定後，每次生成會寫成資料表的一列。若沒有設定，才會退回到 `NOTION_PARENT_PAGE_ID` 底下建立一般 Notion page。
 
 Notion 資料表欄位需包含：
 

@@ -191,7 +191,7 @@ async function createNotionPage(record) {
   return payload.url || "";
 }
 
-async function createNotionTableRow(record, notionKey, dataSourceId) {
+async function createNotionTableRow(record, notionKey, databaseId) {
   const conditionLabel = getConditionLabel(record.condition);
   const timeCategoryLabel = getTimePointLabel(record.time_point_type);
   const properties = {
@@ -226,7 +226,7 @@ async function createNotionTableRow(record, notionKey, dataSourceId) {
       "Notion-Version": NOTION_VERSION,
     },
     body: JSON.stringify({
-      parent: { data_source_id: dataSourceId },
+      parent: { database_id: databaseId },
       properties,
     }),
   });
