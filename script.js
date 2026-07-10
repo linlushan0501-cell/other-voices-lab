@@ -41,7 +41,6 @@ const eventTypes = [
   },
 ];
 const storageKey = "research-monologue-dashboard-static-v1";
-const accessCodeKey = `${storageKey}-access-code`;
 const uiVersion = "figma-flow-v2";
 const promptVersion = "openai-notion-v3";
 const promptVersionReason =
@@ -412,27 +411,14 @@ function createGenerationRequest() {
 
 async function createApiGeneration() {
   const request = createGenerationRequest();
-  const accessCode = sessionStorage.getItem(accessCodeKey) || "";
-  if (!accessCode) {
-    lockApp("請先輸入研究者存取碼。");
-    throw new Error("請先輸入研究者存取碼。");
-  }
-
   const response = await fetch("/api/generate", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-app-access-code": accessCode,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
   });
 
   const payload = await response.json();
   if (!response.ok) {
-    if (response.status === 401 || response.status === 503) {
-      sessionStorage.removeItem(accessCodeKey);
-      lockApp(payload.error || "請重新輸入研究者存取碼。");
-    }
     throw new Error(payload.error || "生成失敗，請稍後再試。");
   }
 
@@ -441,46 +427,6 @@ async function createApiGeneration() {
   }
 
   return payload.generation;
-}
-
-function unlockApp(accessCode) {
-  sessionStorage.setItem(accessCodeKey, accessCode);
-  document.body.classList.remove("is-locked");
-  byId("access-gate").hidden = true;
-  byId("access-message").textContent = "";
-}
-
-function lockApp(message = "") {
-  document.body.classList.add("is-locked");
-  byId("access-gate").hidden = false;
-  byId("access-message").textContent = message;
-}
-
-function bindAccessGate() {
-  byId("access-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const codeInput = byId("access-code");
-    const code = codeInput.value.trim();
-    const message = byId("access-message");
-
-    if (!code) {
-      message.textContent = "請輸入存取碼。";
-      return;
-    }
-
-    unlockApp(code);
-    codeInput.value = "";
-  });
-}
-
-function restoreAccessSession() {
-  const code = sessionStorage.getItem(accessCodeKey);
-  if (!code) {
-    lockApp();
-    return;
-  }
-
-  unlockApp(code);
 }
 
 function upsertGeneration(generation) {
@@ -772,8 +718,6 @@ function bindStaticEvents() {
   });
 }
 
-bindAccessGate();
 bindStaticEvents();
 render();
-restoreAccessSession();
 window.addEventListener("resize", updateViewportScale);

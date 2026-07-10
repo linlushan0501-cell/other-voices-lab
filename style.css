@@ -30,14 +30,6 @@ body[data-step="generate"] {
   overflow-y: auto;
 }
 
-body.is-locked {
-  overflow: hidden;
-}
-
-body.is-locked .app-shell {
-  display: none !important;
-}
-
 button,
 input,
 textarea,
@@ -47,42 +39,6 @@ select {
 
 button {
   cursor: pointer;
-}
-
-.access-gate {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: var(--bg);
-}
-
-.access-card {
-  width: min(100%, 420px);
-  display: grid;
-  gap: 20px;
-}
-
-.access-card h1 {
-  margin: 0;
-  font-size: 42px;
-  line-height: 1;
-}
-
-.access-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.65;
-}
-
-.access-card .primary-button {
-  margin-top: 8px;
-}
-
-.access-message {
-  min-height: 24px;
 }
 
 .app-shell {

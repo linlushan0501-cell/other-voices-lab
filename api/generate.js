@@ -1,5 +1,3 @@
-import { timingSafeEqual } from "node:crypto";
-
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const NOTION_PAGES_URL = "https://api.notion.com/v1/pages";
 const NOTION_VERSION = "2026-03-11";
@@ -14,20 +12,6 @@ function sendJson(response, statusCode, payload) {
 function trimText(value, maxLength = 1900) {
   const text = String(value || "").trim();
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
-}
-
-function isValidAccessCode(value) {
-  const expected = process.env.APP_ACCESS_CODE;
-  const provided = String(value || "");
-
-  if (!expected || !provided) {
-    return false;
-  }
-
-  const expectedBuffer = Buffer.from(expected);
-  const providedBuffer = Buffer.from(provided);
-
-  return expectedBuffer.length === providedBuffer.length && timingSafeEqual(expectedBuffer, providedBuffer);
 }
 
 function notionRichText(value) {
@@ -275,16 +259,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    if (!process.env.APP_ACCESS_CODE) {
-      sendJson(response, 503, { error: "Missing APP_ACCESS_CODE." });
-      return;
-    }
-
-    if (!isValidAccessCode(request.headers["x-app-access-code"])) {
-      sendJson(response, 401, { error: "存取碼已失效或不正確，請重新登入。" });
-      return;
-    }
-
     const body = typeof request.body === "string" ? JSON.parse(request.body) : request.body || {};
     const record = {
       participant_id: trimText(body.participant_id, 120),

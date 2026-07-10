@@ -4,8 +4,6 @@ import assert from "node:assert/strict";
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const script = readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const style = readFileSync(new URL("../style.css", import.meta.url), "utf8");
-const api = readFileSync(new URL("../api/generate.js", import.meta.url), "utf8");
-const authApi = readFileSync(new URL("../api/auth.js", import.meta.url), "utf8");
 
 assert.match(html, /id="participant-select"/, "UI should let researchers switch participants.");
 assert.match(html, /id="add-participant"/, "UI should let researchers add another participant.");
@@ -48,7 +46,3 @@ assert.match(style, /body\[data-step="generate"\]\s*\{[^}]*overflow-y:\s*auto/s,
 assert.match(style, /transform:\s*translate\(-50%, -50%\) scale\(var\(--design-scale\)\)/, "Non-generation frames should be centered and scaled to fit.");
 assert.match(style, /height:\s*1568px/, "The generation frame should retain the Figma export height.");
 assert.match(html, /noindex,\s*nofollow/, "The public preview should not invite search indexing.");
-assert.match(html, /id="access-form"/, "The UI should require a researcher access code before showing the experiment.");
-assert.match(script, /x-app-access-code/, "Generation requests should include the researcher access code header.");
-assert.match(api + authApi, /APP_ACCESS_CODE/, "Server functions should require APP_ACCESS_CODE.");
-assert.match(api, /request\.headers\["x-app-access-code"\]/, "The generation API should reject requests without the access code header.");
