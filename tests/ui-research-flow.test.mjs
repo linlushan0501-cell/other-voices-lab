@@ -50,3 +50,6 @@ assert.match(style, /--shadow:\s*none/, "Panel shadows should stay disabled whil
 assert.match(script, /if \(state\.activeStep !== "generate"\) return;/, "Heavy generation views should only render on the generation page.");
 assert.match(script, /class="matrix-arrow"/, "The record matrix should render the arrow as an explicit grid column.");
 assert.match(style, /grid-template-columns:\s*167px 20px repeat\(6, 167px\)/, "The record matrix columns should stay aligned to the Figma-sized cards.");
+assert.match(script, /function queueSaveState/, "Typing should debounce localStorage writes to reduce UI stalls.");
+assert.match(style, /\.event-type-card\.active\s*\{[^}]*background:\s*#050505/s, "The selected event type should be visually clear.");
+assert.match(style, /prefers-reduced-motion:\s*reduce/, "Motion should respect reduced-motion preferences.");

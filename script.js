@@ -95,6 +95,7 @@ const defaultState = {
 };
 
 let state = loadState();
+let saveStateTimer = null;
 
 function cloneDefaultState() {
   return structuredClone(defaultState);
@@ -163,7 +164,18 @@ function loadState() {
 }
 
 function saveState() {
+  if (saveStateTimer) {
+    clearTimeout(saveStateTimer);
+    saveStateTimer = null;
+  }
   localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function queueSaveState() {
+  if (saveStateTimer) {
+    clearTimeout(saveStateTimer);
+  }
+  saveStateTimer = setTimeout(saveState, 160);
 }
 
 function byId(id) {
@@ -216,7 +228,7 @@ function updateParticipant(field, value) {
   state.participants = state.participants.map((item) =>
     item.id === participant.id ? { ...item, [field]: value } : item,
   );
-  saveState();
+  queueSaveState();
 
   if (state.activeStep === "event-type") {
     renderEventTypes();
@@ -239,7 +251,7 @@ function updateCharacter(id, field, value) {
     state.selectedCharacterId = characters[0]?.id || "";
   }
 
-  saveState();
+  queueSaveState();
   if (state.activeStep === "generate") {
     renderGeneratedViews();
   }

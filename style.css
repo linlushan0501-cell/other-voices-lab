@@ -1,12 +1,12 @@
 :root {
-  --bg: #a9aaa6;
-  --paper: #f1f1ee;
-  --soft: #e5e5e1;
-  --soft-2: #d8d8d3;
-  --ink: #111111;
-  --muted: #747570;
-  --line: rgba(20, 20, 20, 0.74);
-  --line-soft: #c6c7c1;
+  --bg: #d6d7d3;
+  --paper: #f7f7f4;
+  --soft: #ededeb;
+  --soft-2: #e0e0dc;
+  --ink: #090909;
+  --muted: #686a66;
+  --line: rgba(10, 10, 10, 0.82);
+  --line-soft: #c2c4be;
   --danger: #f07b6e;
   --radius: 8px;
   --shadow: none;
@@ -50,7 +50,11 @@ button {
   min-height: 0;
   margin: 0;
   padding: 132px 76px 56px;
-  background: linear-gradient(145deg, #e9e9e5 0%, #dcdcd7 100%);
+  background:
+    linear-gradient(rgba(9, 9, 9, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(9, 9, 9, 0.035) 1px, transparent 1px),
+    #eeeeeb;
+  background-size: 88px 88px, 88px 88px, auto;
   overflow: hidden;
   transform: translate(-50%, -50%) scale(var(--design-scale));
   transform-origin: center center;
@@ -107,9 +111,28 @@ body[data-step="event-type"] .hero {
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(245, 245, 242, 0.72);
+  background: var(--paper);
   color: var(--ink);
   padding: 7px 34px;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    border-color 160ms ease;
+}
+
+.nav button:hover,
+.secondary-button:hover,
+.segmented button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button:active,
+.secondary-button:active,
+.nav button:active,
+.segmented button:active,
+.event-type-card:active {
+  transform: translateY(1px);
 }
 
 .nav button span {
@@ -170,8 +193,8 @@ textarea,
 select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(247, 247, 244, 0.72);
+  border-radius: 8px;
+  background: #fbfbf8;
   color: var(--ink);
   padding: 13px 16px;
   outline: none;
@@ -301,10 +324,21 @@ select:focus {
   width: 100%;
   min-height: 92px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(245, 245, 242, 0.62);
+  position: relative;
+  border-radius: 12px;
+  background: #f7f7f4;
   padding: 18px 22px;
   text-align: left;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    border-color 160ms ease;
+}
+
+.event-type-card:hover {
+  transform: translateX(4px);
+  background: #ffffff;
 }
 
 .event-type-card strong {
@@ -317,12 +351,28 @@ select:focus {
 }
 
 .event-type-card.active {
-  background: rgba(255, 255, 255, 0.48);
+  border-color: #050505;
+  background: #050505;
   color: var(--ink);
 }
 
+.event-type-card.active::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 18px;
+  bottom: 18px;
+  width: 4px;
+  border-radius: 99px;
+  background: #f4f4ef;
+}
+
+.event-type-card.active strong {
+  color: white;
+}
+
 .event-type-card.active span {
-  color: #222;
+  color: #d7d7d2;
 }
 
 .tab-layout {
@@ -336,7 +386,7 @@ select:focus {
 .character-card,
 .generate-controls {
   background: var(--soft);
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(10, 10, 10, 0.12);
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow);
@@ -535,7 +585,9 @@ select:focus {
   width: 383px;
   height: 373px;
   border-radius: 8px;
-  background: #f5f5f1;
+  background:
+    linear-gradient(135deg, rgba(9, 9, 9, 0.04), transparent 38%),
+    #f5f5f1;
 }
 
 .progress-panel {
@@ -543,7 +595,7 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 20px;
-  background: rgba(241, 241, 238, 0.62);
+  background: #f2f2ef;
   overflow: hidden;
   max-width: 1360px;
   min-height: 586px;
@@ -581,7 +633,7 @@ select:focus {
   min-height: 64px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(249, 249, 246, 0.76);
+  background: #fbfbf8;
   padding: 10px 14px;
 }
 
@@ -619,7 +671,7 @@ select:focus {
   gap: 8px;
   border: 1px dashed var(--line);
   border-radius: 10px;
-  background: rgba(249, 249, 246, 0.68);
+  background: #fbfbf8;
   padding: 20px 28px;
 }
 
@@ -677,5 +729,13 @@ select:focus {
 
   .image-preview {
     padding-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
   }
 }
