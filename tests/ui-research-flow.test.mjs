@@ -48,3 +48,5 @@ assert.match(style, /height:\s*1568px/, "The generation frame should retain the 
 assert.match(html, /noindex,\s*nofollow/, "The public preview should not invite search indexing.");
 assert.match(style, /--shadow:\s*none/, "Panel shadows should stay disabled while the Figma layout is being aligned.");
 assert.match(script, /if \(state\.activeStep !== "generate"\) return;/, "Heavy generation views should only render on the generation page.");
+assert.match(script, /class="matrix-arrow"/, "The record matrix should render the arrow as an explicit grid column.");
+assert.match(style, /grid-template-columns:\s*167px 20px repeat\(6, 167px\)/, "The record matrix columns should stay aligned to the Figma-sized cards.");

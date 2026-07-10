@@ -591,7 +591,7 @@ function renderMatrix() {
           }),
           )
         .join("");
-      return `<div class="matrix-row"><div class="matrix-name">${character.name || "未命名角色"}</div>${cells}</div>`;
+      return `<div class="matrix-row"><div class="matrix-name">${character.name || "未命名角色"}</div><div class="matrix-arrow" aria-hidden="true"></div>${cells}</div>`;
     })
     .join("");
 }
