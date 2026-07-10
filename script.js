@@ -217,7 +217,14 @@ function updateParticipant(field, value) {
     item.id === participant.id ? { ...item, [field]: value } : item,
   );
   saveState();
-  renderGeneratedViews();
+
+  if (state.activeStep === "event-type") {
+    renderEventTypes();
+  }
+
+  if (state.activeStep === "generate") {
+    renderGeneratedViews();
+  }
 }
 
 function updateCharacter(id, field, value) {
@@ -233,7 +240,9 @@ function updateCharacter(id, field, value) {
   }
 
   saveState();
-  renderGeneratedViews();
+  if (state.activeStep === "generate") {
+    renderGeneratedViews();
+  }
 }
 
 function getSelectedCharacter() {
@@ -555,11 +564,9 @@ function renderGenerationControls() {
 function renderPostcard() {
   const generation = getCurrentGeneration();
   const character = getSelectedCharacter();
-  const conditionLabel = labels[state.selectedCondition];
-  const timePointLabel = labels[state.selectedTimePoint];
   byId("postcard-status").textContent = generation ? "已生成" : "示意";
   byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
-  byId("postcard-meta").textContent = `${getEventTypeLabel(getActiveParticipant().eventType)} / ${conditionLabel} / ${timePointLabel}`;
+  byId("postcard-meta").textContent = "獨白";
   byId("postcard-body").textContent =
     generation?.generatedContent ||
     "【爸爸】我看到他把杯子握得很緊，明明只是幾句話，他卻像怕自己一開口就會撐不住。當下我沒有馬上問，因為我知道他一被追問，就會把話收回去。";
@@ -613,6 +620,8 @@ function renderRecords() {
 }
 
 function renderGeneratedViews() {
+  if (state.activeStep !== "generate") return;
+
   renderGenerationControls();
   renderPostcard();
   renderMatrix();
