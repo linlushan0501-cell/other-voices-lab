@@ -49,7 +49,6 @@ assert.match(style, /transform:\s*translate\(-50%, -50%\) scale\(var\(--design-s
 assert.match(style, /height:\s*1568px/, "The generation frame should retain the Figma export height.");
 assert.match(html, /noindex,\s*nofollow/, "The public preview should not invite search indexing.");
 assert.match(html, /id="access-form"/, "The UI should require a researcher access code before showing the experiment.");
-assert.match(script, /\/api\/auth/, "The access gate should validate the code with the server.");
 assert.match(script, /x-app-access-code/, "Generation requests should include the researcher access code header.");
 assert.match(api + authApi, /APP_ACCESS_CODE/, "Server functions should require APP_ACCESS_CODE.");
 assert.match(api, /request\.headers\["x-app-access-code"\]/, "The generation API should reject requests without the access code header.");

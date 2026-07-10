@@ -38,7 +38,7 @@ NOTION_DATA_SOURCE_ID=
 APP_ACCESS_CODE=
 ```
 
-`APP_ACCESS_CODE` 是研究者存取碼。公開的 Vercel 網址會先要求輸入這組碼，`/api/generate` 也會用它擋住未授權請求，避免別人使用你的 OpenAI / Notion API。
+`APP_ACCESS_CODE` 是研究者存取碼。公開的 Vercel 網址會先要求輸入這組碼；真正呼叫 OpenAI / Notion 的 `/api/generate` 會在後端驗證這組碼，避免別人使用你的 API。
 
 `NOTION_DATA_SOURCE_ID` 是 Notion 資料表 / database 的 ID，也就是表格網址中 `?v=` 前面的 32 碼。設定後，每次生成會寫成資料表的一列。若沒有設定，才會退回到 `NOTION_PARENT_PAGE_ID` 底下建立一般 Notion page。
 

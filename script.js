@@ -443,19 +443,6 @@ async function createApiGeneration() {
   return payload.generation;
 }
 
-async function verifyAccessCode(accessCode) {
-  const response = await fetch("/api/auth", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ access_code: accessCode }),
-  });
-  const payload = await response.json();
-
-  if (!response.ok) {
-    throw new Error(payload.error || "存取碼驗證失敗。");
-  }
-}
-
 function unlockApp(accessCode) {
   sessionStorage.setItem(accessCodeKey, accessCode);
   document.body.classList.remove("is-locked");
@@ -470,7 +457,7 @@ function lockApp(message = "") {
 }
 
 function bindAccessGate() {
-  byId("access-form").addEventListener("submit", async (event) => {
+  byId("access-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const codeInput = byId("access-code");
     const code = codeInput.value.trim();
@@ -481,33 +468,19 @@ function bindAccessGate() {
       return;
     }
 
-    message.textContent = "驗證中...";
-
-    try {
-      await verifyAccessCode(code);
-      unlockApp(code);
-      codeInput.value = "";
-    } catch (error) {
-      sessionStorage.removeItem(accessCodeKey);
-      message.textContent = error.message;
-    }
+    unlockApp(code);
+    codeInput.value = "";
   });
 }
 
-async function restoreAccessSession() {
+function restoreAccessSession() {
   const code = sessionStorage.getItem(accessCodeKey);
   if (!code) {
     lockApp();
     return;
   }
 
-  try {
-    await verifyAccessCode(code);
-    unlockApp(code);
-  } catch {
-    sessionStorage.removeItem(accessCodeKey);
-    lockApp("請重新輸入研究者存取碼。");
-  }
+  unlockApp(code);
 }
 
 function upsertGeneration(generation) {
