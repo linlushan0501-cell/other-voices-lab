@@ -445,6 +445,7 @@ function renderEventTypes() {
 
 function renderStepVisibility() {
   const current = steps.find((step) => step.id === state.activeStep);
+  document.body.dataset.step = state.activeStep;
   byId("page-title").textContent = current.title;
   steps.forEach((step) => {
     byId(`${step.id}-step`).classList.toggle("hidden", step.id !== state.activeStep);
@@ -597,6 +598,8 @@ function render() {
 
 function bindStaticEvents() {
   byId("participant-select").addEventListener("change", (event) => setActiveParticipant(event.target.value));
+  byId("participant-next").addEventListener("click", () => setStep("event-type"));
+  byId("event-type-next").addEventListener("click", () => setStep("event"));
   byId("add-participant").addEventListener("click", () => {
     const participant = createParticipant(state.participants.length + 1);
     state.participants.push(participant);

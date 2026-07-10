@@ -22,6 +22,11 @@ body {
   color: var(--ink);
   font-family: Arial, "PingFang TC", "Noto Sans TC", sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+body[data-step="generate"] {
+  overflow-y: auto;
 }
 
 button,
@@ -36,10 +41,10 @@ button {
 }
 
 .app-shell {
-  width: min(100%, 1360px);
+  width: min(100%, 1512px);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 72px 64px 56px;
+  padding: 132px 76px 56px;
 }
 
 .hero {
@@ -47,15 +52,28 @@ button {
   grid-template-columns: minmax(320px, 1fr) auto;
   gap: 48px;
   align-items: end;
-  margin-bottom: 58px;
+  margin-bottom: 73px;
 }
 
 .hero h1 {
   margin: 0;
   max-width: 620px;
-  font-size: clamp(44px, 6vw, 70px);
+  font-size: clamp(58px, 6vw, 70px);
   line-height: 0.98;
   letter-spacing: -0.02em;
+}
+
+body[data-step="participant"] .app-shell,
+body[data-step="event-type"] .app-shell {
+  display: grid;
+  align-content: center;
+  min-height: 100vh;
+  padding: 0 56px;
+}
+
+body[data-step="participant"] .hero,
+body[data-step="event-type"] .hero {
+  display: none;
 }
 
 .nav {
@@ -175,12 +193,23 @@ select:focus {
 
 .welcome-card {
   display: grid;
-  place-items: center;
-  min-height: 520px;
+  align-content: center;
+  justify-items: center;
+  min-height: 100vh;
+  padding-bottom: 34px;
+}
+
+.welcome-card::before {
+  content: "welcome";
+  display: block;
+  margin-bottom: 42px;
+  font-size: 40px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .welcome-form {
-  width: min(100%, 540px);
+  width: min(100%, 592px);
   display: grid;
   gap: 24px;
 }
@@ -189,11 +218,28 @@ select:focus {
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 36px;
+  margin-top: 42px;
+}
+
+.step-link {
+  justify-self: center;
+  width: 160px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-weight: 700;
+}
+
+.screen-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 34px;
 }
 
 .center-heading {
-  margin: 0 auto 58px;
+  margin: 0 auto 64px;
   text-align: center;
 }
 
@@ -217,9 +263,9 @@ select:focus {
 }
 
 .event-type-list {
-  width: min(100%, 760px);
+  width: min(100%, 846px);
   display: grid;
-  gap: 12px;
+  gap: 13px;
   margin: 0 auto;
 }
 
@@ -227,7 +273,7 @@ select:focus {
   display: grid;
   gap: 8px;
   width: 100%;
-  min-height: 86px;
+  min-height: 92px;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--paper);
@@ -256,7 +302,8 @@ select:focus {
 .tab-layout {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 20px;
+  max-width: 1360px;
 }
 
 .event-panel,
@@ -268,10 +315,14 @@ select:focus {
   box-shadow: var(--shadow);
 }
 
+.event-panel {
+  min-height: 568px;
+}
+
 .event-panel h2 {
   margin: 0 0 28px;
   text-align: right;
-  font-size: 32px;
+  font-size: 34px;
 }
 
 .form-grid {
@@ -287,7 +338,8 @@ select:focus {
 
 .character-list {
   display: grid;
-  gap: 22px;
+  gap: 24px;
+  max-width: 1360px;
 }
 
 .character-card {
@@ -295,6 +347,7 @@ select:focus {
   grid-template-columns: 72px minmax(240px, 0.34fr) minmax(0, 1fr);
   gap: 20px;
   align-items: end;
+  min-height: 111px;
 }
 
 .card-title {
@@ -313,15 +366,16 @@ select:focus {
 
 .generate-layout {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns: 383px 957px;
   gap: 20px;
   align-items: stretch;
+  max-width: 1360px;
 }
 
 .generate-controls {
   display: grid;
   gap: 22px;
-  min-height: 480px;
+  min-height: 527px;
 }
 
 .segmented {
@@ -343,9 +397,9 @@ select:focus {
 
 .postcard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.44fr);
+  grid-template-columns: minmax(0, 1fr) 382px;
   gap: 34px;
-  min-height: 480px;
+  min-height: 527px;
   padding: 22px;
   border-radius: 4px;
   background: #000;
@@ -413,12 +467,14 @@ select:focus {
 }
 
 .progress-panel {
-  margin-top: 26px;
+  margin-top: 51px;
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 20px;
   background: var(--paper);
   overflow-x: auto;
+  max-width: 1360px;
+  min-height: 586px;
 }
 
 .progress-panel h2 {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const script = readFileSync(new URL("../script.js", import.meta.url), "utf8");
+const style = readFileSync(new URL("../style.css", import.meta.url), "utf8");
 
 assert.match(html, /id="participant-select"/, "UI should let researchers switch participants.");
 assert.match(html, /id="add-participant"/, "UI should let researchers add another participant.");
@@ -35,3 +36,5 @@ assert.doesNotMatch(html + script, /請先完成目前條件/, "The UI should no
 assert.match(html + script, /自動寫入 Notion/, "The UI should clarify that API mode writes to Notion automatically.");
 assert.doesNotMatch(html + script, /核可|退回|重生|審閱/, "The experiment UI should not imply subjective review/regeneration.");
 assert.match(html, /<span class="stamp">V3<\/span>/, "The UI version stamp should match the current prompt version.");
+assert.match(style, /body\s*\{[^}]*overflow:\s*hidden/s, "Non-generation pages should not scroll vertically.");
+assert.match(style, /body\[data-step="generate"\]\s*\{[^}]*overflow-y:\s*auto/s, "Only the generation page should allow vertical scrolling.");
