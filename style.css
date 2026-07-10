@@ -10,6 +10,7 @@
   --danger: #f07b6e;
   --radius: 8px;
   --shadow: 0 22px 55px -44px rgba(0, 0, 0, 0.5);
+  --design-scale: 1;
 }
 
 * {
@@ -29,6 +30,14 @@ body[data-step="generate"] {
   overflow-y: auto;
 }
 
+body.is-locked {
+  overflow: hidden;
+}
+
+body.is-locked .app-shell {
+  display: none !important;
+}
+
 button,
 input,
 textarea,
@@ -40,11 +49,64 @@ button {
   cursor: pointer;
 }
 
+.access-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.access-card {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 20px;
+}
+
+.access-card h1 {
+  margin: 0;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.access-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.access-card .primary-button {
+  margin-top: 8px;
+}
+
+.access-message {
+  min-height: 24px;
+}
+
 .app-shell {
-  width: min(100%, 1512px);
-  min-height: 100vh;
-  margin: 0 auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 1512px;
+  height: 982px;
+  min-height: 0;
+  margin: 0;
   padding: 132px 76px 56px;
+  overflow: hidden;
+  transform: translate(-50%, -50%) scale(var(--design-scale));
+  transform-origin: center center;
+}
+
+body[data-step="generate"] .app-shell {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 1568px;
+  overflow: visible;
+  transform: translateX(-50%) scale(var(--design-scale));
+  transform-origin: top center;
 }
 
 .hero {
@@ -67,7 +129,6 @@ body[data-step="participant"] .app-shell,
 body[data-step="event-type"] .app-shell {
   display: grid;
   align-content: center;
-  min-height: 100vh;
   padding: 0 56px;
 }
 
@@ -195,7 +256,8 @@ select:focus {
   display: grid;
   align-content: center;
   justify-items: center;
-  min-height: 100vh;
+  min-height: 0;
+  height: 100%;
   padding-bottom: 34px;
 }
 
@@ -221,10 +283,19 @@ select:focus {
   margin-top: 42px;
 }
 
+.participant-actions .secondary-button {
+  width: 212px;
+  min-width: 212px;
+  min-height: 38px;
+  padding: 0;
+}
+
 .step-link {
-  justify-self: center;
-  width: 160px;
-  min-height: 36px;
+  position: absolute;
+  left: 1244px;
+  top: 905px;
+  width: 212px;
+  min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--ink);
@@ -233,9 +304,7 @@ select:focus {
 }
 
 .screen-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 34px;
+  margin: 0;
 }
 
 .center-heading {
@@ -291,12 +360,12 @@ select:focus {
 }
 
 .event-type-card.active {
-  background: var(--ink);
-  color: white;
+  background: var(--soft);
+  color: var(--ink);
 }
 
 .event-type-card.active span {
-  color: #e8e8e4;
+  color: #222;
 }
 
 .tab-layout {

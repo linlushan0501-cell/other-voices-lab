@@ -3,10 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Other Voices Lab | 虛構他者獨白</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body class="is-locked">
+    <aside class="access-gate" id="access-gate" aria-labelledby="access-title">
+      <form class="access-card" id="access-form">
+        <h1 id="access-title">Private Preview</h1>
+        <p>請輸入研究者存取碼，避免公開網址被他人使用 OpenAI / Notion API。</p>
+        <label>
+          <span>存取碼</span>
+          <input id="access-code" type="password" autocomplete="current-password" />
+        </label>
+        <button class="primary-button" type="submit">進入</button>
+        <p class="access-message" id="access-message" role="status"></p>
+      </form>
+    </aside>
+
     <main class="app-shell">
       <header class="hero">
         <h1 id="page-title">welcome</h1>
@@ -25,13 +39,13 @@
           </label>
           <label>
             <span>日期</span>
-            <input id="interview-date" type="date" />
+            <input id="interview-date" inputmode="numeric" placeholder="年 / 月 / 日" />
           </label>
           <div class="participant-actions">
             <button class="secondary-button" id="add-participant" type="button">Add</button>
             <button class="secondary-button danger-button" id="delete-participant" type="button">Delete</button>
           </div>
-          <button class="step-link" id="participant-next" type="button">下一步</button>
+          <button class="step-link" id="participant-next" type="button">Next</button>
         </div>
       </section>
 
@@ -42,7 +56,7 @@
         </div>
         <div class="event-type-list" id="event-type-list"></div>
         <div class="screen-actions">
-          <button class="step-link" id="event-type-next" type="button">下一步</button>
+          <button class="step-link" id="event-type-next" type="button">Next</button>
         </div>
       </section>
 

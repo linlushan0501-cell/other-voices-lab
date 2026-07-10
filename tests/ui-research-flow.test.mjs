@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const script = readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const style = readFileSync(new URL("../style.css", import.meta.url), "utf8");
+const api = readFileSync(new URL("../api/generate.js", import.meta.url), "utf8");
+const authApi = readFileSync(new URL("../api/auth.js", import.meta.url), "utf8");
 
 assert.match(html, /id="participant-select"/, "UI should let researchers switch participants.");
 assert.match(html, /id="add-participant"/, "UI should let researchers add another participant.");
@@ -20,6 +22,11 @@ assert.match(html + script, /愛與歸屬/, "UI should offer the belonging event
 assert.match(html + script, /尊重需求/, "UI should offer the esteem event type.");
 assert.match(html + script, /自我實現/, "UI should offer the self-actualization event type.");
 assert.match(script, /selectedEventType/, "State should track the selected life event type.");
+assert.match(script, /width:\s*1512/, "UI should use the Figma frame width as the layout baseline.");
+assert.match(script, /height:\s*982/, "Non-generation pages should use the Figma frame height as the layout baseline.");
+assert.match(script, /generateHeight:\s*1568/, "The generation page should keep the taller Figma frame height.");
+assert.match(script, /updateViewportScale/, "UI should scale the Figma-sized frame to fit the current browser viewport.");
+assert.match(script, /window\.addEventListener\("resize",\s*updateViewportScale\)/, "UI should recalculate frame scaling when the viewport changes.");
 
 assert.doesNotMatch(html + script, /此時此刻/, "The UI/mock output should not use the stiff phrase 此時此刻.");
 assert.doesNotMatch(html + script, /我站在/, "Mock monologues should not force a spatial time-travel opening.");
@@ -27,8 +34,8 @@ assert.doesNotMatch(html + script, /聽完|聽到這段|第一個反應/, "Mock 
 assert.doesNotMatch(html + script, /這件事對我來說|旁人的故事/, "Mock output should not use abstract template phrasing.");
 assert.match(script, /pickVariant/, "Mock output should vary wording instead of using one fixed public template.");
 assert.match(script, /我看到|我記得|我注意到/, "Mock output should start from natural observation language.");
-assert.doesNotMatch(html + script, /現在/, "Research-facing time labels should use 當下 instead of 現在.");
 assert.match(html + script, /當下/, "The present-time condition should be labeled 當下.");
+assert.match(script, /present:\s*"現在"/, "The record matrix should match the Figma label 現在.");
 assert.match(html + script, /真實/, "The experimental condition should be labeled 真實.");
 assert.match(html + script, /反事實/, "The experimental condition should be labeled 反事實.");
 assert.doesNotMatch(html + script, /請先完成目前條件/, "The UI should not show extra instructional hint text.");
@@ -38,3 +45,11 @@ assert.doesNotMatch(html + script, /核可|退回|重生|審閱/, "The experimen
 assert.match(html, /<span class="stamp">V3<\/span>/, "The UI version stamp should match the current prompt version.");
 assert.match(style, /body\s*\{[^}]*overflow:\s*hidden/s, "Non-generation pages should not scroll vertically.");
 assert.match(style, /body\[data-step="generate"\]\s*\{[^}]*overflow-y:\s*auto/s, "Only the generation page should allow vertical scrolling.");
+assert.match(style, /transform:\s*translate\(-50%, -50%\) scale\(var\(--design-scale\)\)/, "Non-generation frames should be centered and scaled to fit.");
+assert.match(style, /height:\s*1568px/, "The generation frame should retain the Figma export height.");
+assert.match(html, /noindex,\s*nofollow/, "The public preview should not invite search indexing.");
+assert.match(html, /id="access-form"/, "The UI should require a researcher access code before showing the experiment.");
+assert.match(script, /\/api\/auth/, "The access gate should validate the code with the server.");
+assert.match(script, /x-app-access-code/, "Generation requests should include the researcher access code header.");
+assert.match(api + authApi, /APP_ACCESS_CODE/, "Server functions should require APP_ACCESS_CODE.");
+assert.match(api, /request\.headers\["x-app-access-code"\]/, "The generation API should reject requests without the access code header.");

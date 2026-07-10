@@ -8,6 +8,11 @@ const steps = [
 
 const conditions = ["real", "counterfactual"];
 const timePoints = ["past", "present", "future"];
+const designFrame = {
+  width: 1512,
+  height: 982,
+  generateHeight: 1568,
+};
 const eventTypes = [
   {
     value: "生理需求",
@@ -36,6 +41,8 @@ const eventTypes = [
   },
 ];
 const storageKey = "research-monologue-dashboard-static-v1";
+const accessCodeKey = `${storageKey}-access-code`;
+const uiVersion = "figma-flow-v2";
 const promptVersion = "openai-notion-v3";
 const promptVersionReason =
   "v3: 避免複述使用者輸入的敘事內文；要求物件、場景與日常細節必須有角色脈絡；增加獨白形式、口吻與語氣變化。";
@@ -47,6 +54,11 @@ const labels = {
   past: "過去",
   present: "當下",
   future: "未來",
+};
+
+const recordTimeLabels = {
+  ...labels,
+  present: "現在",
 };
 
 function createCharacter(index) {
@@ -72,6 +84,7 @@ function createParticipant(index) {
 const firstParticipant = createParticipant(1);
 
 const defaultState = {
+  uiVersion,
   activeStep: "participant",
   activeParticipantId: firstParticipant.id,
   selectedCondition: "real",
@@ -117,11 +130,16 @@ function loadState() {
     const next = {
       ...cloneDefaultState(),
       ...parsed,
+      uiVersion,
       participants,
       activeParticipantId,
       selectedEventType: parsed.selectedEventType || activeParticipant.eventType,
       generations: parsed.generations || [],
     };
+
+    if (parsed.uiVersion !== uiVersion) {
+      next.activeStep = "participant";
+    }
 
     if (!participants.some((participant) => participant.id === next.activeParticipantId)) {
       next.activeParticipantId = participants[0].id;
@@ -133,6 +151,10 @@ function loadState() {
 
     if (!getActiveParticipantFromState(next).characters.some((character) => character.id === next.selectedCharacterId)) {
       next.selectedCharacterId = getActiveParticipantFromState(next).characters[0]?.id || "";
+    }
+
+    if (parsed.uiVersion !== uiVersion) {
+      localStorage.setItem(storageKey, JSON.stringify(next));
     }
 
     return next;
@@ -169,6 +191,16 @@ function setStep(stepId) {
   state.activeStep = stepId;
   saveState();
   render();
+}
+
+function updateViewportScale() {
+  const isGenerateStep = state.activeStep === "generate";
+  const scale = isGenerateStep
+    ? Math.min(window.innerWidth / designFrame.width, 1)
+    : Math.min(window.innerWidth / designFrame.width, window.innerHeight / designFrame.height, 1);
+
+  document.documentElement.style.setProperty("--design-scale", String(scale));
+  document.body.style.minHeight = isGenerateStep ? `${designFrame.generateHeight * scale}px` : "100vh";
 }
 
 function setActiveParticipant(participantId) {
@@ -380,14 +412,27 @@ function createGenerationRequest() {
 
 async function createApiGeneration() {
   const request = createGenerationRequest();
+  const accessCode = sessionStorage.getItem(accessCodeKey) || "";
+  if (!accessCode) {
+    lockApp("請先輸入研究者存取碼。");
+    throw new Error("請先輸入研究者存取碼。");
+  }
+
   const response = await fetch("/api/generate", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-app-access-code": accessCode,
+    },
     body: JSON.stringify(request),
   });
 
   const payload = await response.json();
   if (!response.ok) {
+    if (response.status === 401 || response.status === 503) {
+      sessionStorage.removeItem(accessCodeKey);
+      lockApp(payload.error || "請重新輸入研究者存取碼。");
+    }
     throw new Error(payload.error || "生成失敗，請稍後再試。");
   }
 
@@ -396,6 +441,73 @@ async function createApiGeneration() {
   }
 
   return payload.generation;
+}
+
+async function verifyAccessCode(accessCode) {
+  const response = await fetch("/api/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ access_code: accessCode }),
+  });
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.error || "存取碼驗證失敗。");
+  }
+}
+
+function unlockApp(accessCode) {
+  sessionStorage.setItem(accessCodeKey, accessCode);
+  document.body.classList.remove("is-locked");
+  byId("access-gate").hidden = true;
+  byId("access-message").textContent = "";
+}
+
+function lockApp(message = "") {
+  document.body.classList.add("is-locked");
+  byId("access-gate").hidden = false;
+  byId("access-message").textContent = message;
+}
+
+function bindAccessGate() {
+  byId("access-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const codeInput = byId("access-code");
+    const code = codeInput.value.trim();
+    const message = byId("access-message");
+
+    if (!code) {
+      message.textContent = "請輸入存取碼。";
+      return;
+    }
+
+    message.textContent = "驗證中...";
+
+    try {
+      await verifyAccessCode(code);
+      unlockApp(code);
+      codeInput.value = "";
+    } catch (error) {
+      sessionStorage.removeItem(accessCodeKey);
+      message.textContent = error.message;
+    }
+  });
+}
+
+async function restoreAccessSession() {
+  const code = sessionStorage.getItem(accessCodeKey);
+  if (!code) {
+    lockApp();
+    return;
+  }
+
+  try {
+    await verifyAccessCode(code);
+    unlockApp(code);
+  } catch {
+    sessionStorage.removeItem(accessCodeKey);
+    lockApp("請重新輸入研究者存取碼。");
+  }
 }
 
 function upsertGeneration(generation) {
@@ -446,6 +558,7 @@ function renderEventTypes() {
 function renderStepVisibility() {
   const current = steps.find((step) => step.id === state.activeStep);
   document.body.dataset.step = state.activeStep;
+  updateViewportScale();
   byId("page-title").textContent = current.title;
   steps.forEach((step) => {
     byId(`${step.id}-step`).classList.toggle("hidden", step.id !== state.activeStep);
@@ -485,7 +598,7 @@ function renderCharacters() {
     const node = template.content.cloneNode(true);
     const card = node.querySelector(".character-card");
     card.dataset.characterId = character.id;
-    card.querySelector(".card-title").textContent = `角色 ${index + 1}`;
+    card.querySelector(".card-title").textContent = `他者${String(index + 1).padStart(2, "0")}`;
     card.querySelectorAll("input").forEach((input) => {
       input.value = character[input.dataset.field] || "";
       input.addEventListener("input", (event) => updateCharacter(character.id, input.dataset.field, event.target.value));
@@ -548,7 +661,7 @@ function renderMatrix() {
                 item.timePointType === timePoint,
             );
             const status = generation ? "generated" : "missing";
-            return `<div class="matrix-cell ${status}"><span>${labels[condition]}</span><strong>${labels[timePoint]}</strong></div>`;
+            return `<div class="matrix-cell ${status}"><span>${labels[condition]}</span><strong>${recordTimeLabels[timePoint]}</strong></div>`;
           }),
           )
         .join("");
@@ -686,5 +799,8 @@ function bindStaticEvents() {
   });
 }
 
+bindAccessGate();
 bindStaticEvents();
 render();
+restoreAccessSession();
+window.addEventListener("resize", updateViewportScale);
