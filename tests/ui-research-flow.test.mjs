@@ -20,9 +20,10 @@ assert.match(html + script, /愛與歸屬/, "UI should offer the belonging event
 assert.match(html + script, /尊重需求/, "UI should offer the esteem event type.");
 assert.match(html + script, /自我實現/, "UI should offer the self-actualization event type.");
 assert.match(script, /selectedEventType/, "State should track the selected life event type.");
+assert.match(html, /id="interview-date" type="date"/, "The participant date field should use the native date picker.");
 assert.match(script, /width:\s*1512/, "UI should use the Figma frame width as the layout baseline.");
 assert.match(script, /height:\s*982/, "Non-generation pages should use the Figma frame height as the layout baseline.");
-assert.match(script, /generateHeight:\s*1568/, "The generation page should keep the taller Figma frame height.");
+assert.match(script, /generateHeight:\s*982/, "The generation page should use the same frame height as the other pages.");
 assert.match(script, /updateViewportScale/, "UI should scale the Figma-sized frame to fit the current browser viewport.");
 assert.match(script, /window\.addEventListener\("resize",\s*updateViewportScale\)/, "UI should recalculate frame scaling when the viewport changes.");
 
@@ -42,9 +43,9 @@ assert.match(html + script, /自動寫入 Notion/, "The UI should clarify that A
 assert.doesNotMatch(html + script, /核可|退回|重生|審閱/, "The experiment UI should not imply subjective review/regeneration.");
 assert.match(html, /<span class="stamp">V3<\/span>/, "The UI version stamp should match the current prompt version.");
 assert.match(style, /body\s*\{[^}]*overflow:\s*hidden/s, "Non-generation pages should not scroll vertically.");
-assert.match(style, /body\[data-step="generate"\]\s*\{[^}]*overflow-y:\s*auto/s, "Only the generation page should allow vertical scrolling.");
+assert.match(style, /body\[data-step="generate"\]\s*\{[^}]*overflow:\s*hidden/s, "The generation page should use the same viewport behavior as the other pages.");
 assert.match(style, /transform:\s*translate\(-50%, -50%\) scale\(var\(--design-scale\)\)/, "Non-generation frames should be centered and scaled to fit.");
-assert.match(style, /height:\s*1568px/, "The generation frame should retain the Figma export height.");
+assert.match(style, /body\[data-step="generate"\] \.app-shell\s*\{[^}]*height:\s*982px/s, "The generation frame should match the other page heights.");
 assert.match(html, /noindex,\s*nofollow/, "The public preview should not invite search indexing.");
 assert.match(style, /--shadow:\s*none/, "Panel shadows should stay disabled while the Figma layout is being aligned.");
 assert.match(script, /if \(state\.activeStep !== "generate"\) return;/, "Heavy generation views should only render on the generation page.");

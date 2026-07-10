@@ -11,7 +11,7 @@ const timePoints = ["past", "present", "future"];
 const designFrame = {
   width: 1512,
   height: 982,
-  generateHeight: 1568,
+  generateHeight: 982,
 };
 const eventTypes = [
   {
@@ -205,13 +205,10 @@ function setStep(stepId) {
 }
 
 function updateViewportScale() {
-  const isGenerateStep = state.activeStep === "generate";
-  const scale = isGenerateStep
-    ? Math.min(window.innerWidth / designFrame.width, 1)
-    : Math.min(window.innerWidth / designFrame.width, window.innerHeight / designFrame.height, 1);
+  const scale = Math.min(window.innerWidth / designFrame.width, window.innerHeight / designFrame.height, 1);
 
   document.documentElement.style.setProperty("--design-scale", String(scale));
-  document.body.style.minHeight = isGenerateStep ? `${designFrame.generateHeight * scale}px` : "100vh";
+  document.body.style.minHeight = "100vh";
 }
 
 function setActiveParticipant(participantId) {

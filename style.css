@@ -1,12 +1,12 @@
 :root {
-  --bg: #d6d7d3;
-  --paper: #f7f7f4;
-  --soft: #ededeb;
-  --soft-2: #e0e0dc;
+  --bg: #f3f3f1;
+  --paper: #ffffff;
+  --soft: #f6f6f4;
+  --soft-2: #ececea;
   --ink: #090909;
-  --muted: #686a66;
-  --line: rgba(10, 10, 10, 0.82);
-  --line-soft: #c2c4be;
+  --muted: #6b6b67;
+  --line: rgba(10, 10, 10, 0.86);
+  --line-soft: #d7d8d3;
   --danger: #f07b6e;
   --radius: 8px;
   --shadow: none;
@@ -27,7 +27,7 @@ body {
 }
 
 body[data-step="generate"] {
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 button,
@@ -50,24 +50,20 @@ button {
   min-height: 0;
   margin: 0;
   padding: 132px 76px 56px;
-  background:
-    linear-gradient(rgba(9, 9, 9, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(9, 9, 9, 0.035) 1px, transparent 1px),
-    #eeeeeb;
-  background-size: 88px 88px, 88px 88px, auto;
+  background: #ffffff;
   overflow: hidden;
   transform: translate(-50%, -50%) scale(var(--design-scale));
   transform-origin: center center;
 }
 
 body[data-step="generate"] .app-shell {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: 50%;
   left: 50%;
-  height: 1568px;
-  overflow: visible;
-  transform: translateX(-50%) scale(var(--design-scale));
-  transform-origin: top center;
+  height: 982px;
+  overflow: hidden;
+  transform: translate(-50%, -50%) scale(var(--design-scale));
+  transform-origin: center center;
 }
 
 .hero {
@@ -193,8 +189,8 @@ textarea,
 select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfbf8;
+  border-radius: 6px;
+  background: #ffffff;
   color: var(--ink);
   padding: 13px 16px;
   outline: none;
@@ -325,8 +321,8 @@ select:focus {
   min-height: 92px;
   border: 1px solid var(--line);
   position: relative;
-  border-radius: 12px;
-  background: #f7f7f4;
+  border-radius: 8px;
+  background: #ffffff;
   padding: 18px 22px;
   text-align: left;
   transition:
@@ -387,7 +383,7 @@ select:focus {
 .generate-controls {
   background: var(--soft);
   border: 1px solid rgba(10, 10, 10, 0.12);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   box-shadow: var(--shadow);
 }
@@ -500,7 +496,7 @@ select:focus {
   min-height: 527px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #090909;
   color: white;
 }
@@ -585,24 +581,23 @@ select:focus {
   width: 383px;
   height: 373px;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(9, 9, 9, 0.04), transparent 38%),
-    #f5f5f1;
+  background: #ffffff;
 }
 
 .progress-panel {
-  margin-top: 51px;
+  margin-top: 25px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 20px;
-  background: #f2f2ef;
-  overflow: hidden;
+  background: #ffffff;
+  overflow: auto;
   max-width: 1360px;
-  min-height: 586px;
+  height: 216px;
+  min-height: 0;
 }
 
 .progress-panel h2 {
-  margin-bottom: 26px;
+  margin-bottom: 16px;
 }
 
 .matrix {
@@ -632,8 +627,8 @@ select:focus {
 .matrix-cell {
   min-height: 64px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfbf8;
+  border-radius: 6px;
+  background: #ffffff;
   padding: 10px 14px;
 }
 
@@ -670,8 +665,8 @@ select:focus {
   display: grid;
   gap: 8px;
   border: 1px dashed var(--line);
-  border-radius: 10px;
-  background: #fbfbf8;
+  border-radius: 6px;
+  background: #ffffff;
   padding: 20px 28px;
 }
 
