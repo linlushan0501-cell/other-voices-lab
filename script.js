@@ -205,10 +205,8 @@ function setStep(stepId) {
 }
 
 function updateViewportScale() {
-  const scale = Math.min(window.innerWidth / designFrame.width, window.innerHeight / designFrame.height, 1);
-
-  document.documentElement.style.setProperty("--design-scale", String(scale));
-  document.body.style.minHeight = "100vh";
+  document.documentElement.style.setProperty("--design-scale", "1");
+  document.body.style.minHeight = "100svh";
 }
 
 function setActiveParticipant(participantId) {

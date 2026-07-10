@@ -23,11 +23,13 @@ body {
   color: var(--ink);
   font-family: Arial, "PingFang TC", "Noto Sans TC", sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body[data-step="generate"] {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 button,
@@ -42,28 +44,21 @@ button {
 }
 
 .app-shell {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 1512px;
-  height: 982px;
-  min-height: 0;
-  margin: 0;
-  padding: 132px 76px 56px;
+  position: relative;
+  width: min(100%, 1512px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(56px, 8vw, 132px) clamp(24px, 5vw, 76px) 56px;
   background: #ffffff;
-  overflow: hidden;
-  transform: translate(-50%, -50%) scale(var(--design-scale));
-  transform-origin: center center;
+  overflow: visible;
 }
 
 body[data-step="generate"] .app-shell {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  height: 982px;
-  overflow: hidden;
-  transform: translate(-50%, -50%) scale(var(--design-scale));
-  transform-origin: center center;
+  position: relative;
+  width: min(100%, 1512px);
+  min-height: 100svh;
+  height: auto;
+  overflow: visible;
 }
 
 .hero {
@@ -86,6 +81,7 @@ body[data-step="participant"] .app-shell,
 body[data-step="event-type"] .app-shell {
   display: grid;
   align-content: center;
+  min-height: 100svh;
   padding: 0 56px;
 }
 
@@ -113,22 +109,7 @@ body[data-step="event-type"] .hero {
   transition:
     background 160ms ease,
     color 160ms ease,
-    transform 160ms ease,
     border-color 160ms ease;
-}
-
-.nav button:hover,
-.secondary-button:hover,
-.segmented button:hover {
-  transform: translateY(-1px);
-}
-
-.primary-button:active,
-.secondary-button:active,
-.nav button:active,
-.segmented button:active,
-.event-type-card:active {
-  transform: translateY(1px);
 }
 
 .nav button span {
@@ -268,8 +249,8 @@ select:focus {
 
 .step-link {
   position: absolute;
-  left: 1244px;
-  top: 905px;
+  right: 56px;
+  bottom: 39px;
   width: 212px;
   min-height: 38px;
   border: 1px solid var(--line);
@@ -328,13 +309,12 @@ select:focus {
   transition:
     background 160ms ease,
     color 160ms ease,
-    transform 160ms ease,
     border-color 160ms ease;
 }
 
 .event-type-card:hover {
-  transform: translateX(4px);
   background: #ffffff;
+  border-color: #050505;
 }
 
 .event-type-card strong {
@@ -439,18 +419,19 @@ select:focus {
 
 .generate-layout {
   display: grid;
-  grid-template-columns: 383px 957px;
+  grid-template-columns: minmax(280px, 383px) minmax(0, 957px);
   gap: 20px;
   align-items: stretch;
+  width: 100%;
   max-width: 1360px;
-  height: 527px;
+  min-height: 527px;
 }
 
 .generate-controls {
   display: grid;
   grid-template-rows: auto auto auto auto 1fr auto;
   gap: 22px;
-  width: 383px;
+  width: 100%;
   min-height: 527px;
   padding: 20px;
 }
@@ -492,8 +473,9 @@ select:focus {
 .postcard {
   position: relative;
   display: block;
-  width: 957px;
-  min-height: 527px;
+  width: 100%;
+  height: 527px;
+  min-height: 0;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
@@ -592,8 +574,9 @@ select:focus {
   background: #ffffff;
   overflow: auto;
   max-width: 1360px;
-  height: 216px;
-  min-height: 0;
+  min-height: 360px;
+  height: auto;
+  max-height: none;
 }
 
 .progress-panel h2 {
@@ -603,14 +586,14 @@ select:focus {
 .matrix {
   display: grid;
   gap: 20px;
-  width: 1315px;
+  width: 100%;
   max-width: 100%;
 }
 
 .matrix-row {
   display: grid;
-  grid-template-columns: 167px 20px repeat(6, 167px);
-  gap: 18px;
+  grid-template-columns: minmax(140px, 167px) 20px repeat(6, minmax(112px, 1fr));
+  gap: 14px;
   align-items: center;
 }
 
@@ -694,6 +677,11 @@ select:focus {
     padding: 32px 18px 40px;
   }
 
+  body[data-step="participant"] .app-shell,
+  body[data-step="event-type"] .app-shell {
+    padding: 32px 18px 40px;
+  }
+
   .hero,
   .tab-layout,
   .generate-layout,
@@ -724,6 +712,41 @@ select:focus {
 
   .image-preview {
     padding-top: 0;
+  }
+
+  .step-link {
+    right: 18px;
+    bottom: 24px;
+  }
+
+  .postcard {
+    height: auto;
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .postcard-copy,
+  .postcard-top,
+  .image-preview {
+    display: grid;
+  }
+
+  .stamp,
+  .postcard h2,
+  .pill,
+  .postcard p,
+  .image-preview span,
+  .image-preview div {
+    position: static;
+  }
+
+  .postcard p,
+  .image-preview div {
+    width: 100%;
+  }
+
+  .image-preview div {
+    height: 260px;
   }
 }
 
