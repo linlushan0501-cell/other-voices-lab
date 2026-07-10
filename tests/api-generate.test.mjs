@@ -17,6 +17,7 @@ assert.match(api, /https:\/\/api\.notion\.com\/v1\/pages/, "The API function sho
 assert.match(api, /generated_image_url/, "The Notion record payload should include generated_image_url even when blank.");
 assert.match(api, /database_id/, "The Notion table path should accept the database ID copied from the Notion table URL.");
 assert.match(api, /participant_id:\s*\{\s*title:/, "The Notion table row should use participant_id as the title column.");
+assert.match(api, /event_type:\s*\{\s*select:\s*\{\s*name:\s*record\.event_type/s, "The Notion table row should write the selected life event type.");
 assert.match(api, /condition:\s*\{\s*select:/, "The Notion table row should write condition as a select.");
 assert.match(api, /time_point_type:\s*\{\s*select:\s*\{\s*name:\s*timeCategoryLabel/s, "The Notion table row should write 過去/當下/未來 into time_point_type.");
 assert.match(api, /time_point_label:\s*\{\s*rich_text:\s*notionRichText\(record\.time_point_label\)/, "The Notion table row should write the user's time label text into time_point_label.");
@@ -36,6 +37,7 @@ assert.match(api, /每次選擇一種不同的獨白形式/, "The prompt should 
 
 assert.match(script, /fetch\("\/api\/generate"/, "The browser should call the Vercel function instead of only using mock data.");
 assert.match(script, /participant_id/, "The browser should send participant_id to the API.");
+assert.match(script, /event_type/, "The browser should send the selected life event type to the API.");
 assert.match(script, /time_point_type/, "The browser should send time_point_type to the API.");
 assert.match(script, /prompt_version/, "The browser should send prompt_version to the API.");
 assert.match(script, /prompt_version_reason/, "The browser should send the reason for the current prompt version.");

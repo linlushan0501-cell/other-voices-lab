@@ -155,6 +155,7 @@ async function createNotionPage(record) {
   const title = `${record.participant_id} / ${record.condition} / ${record.time_point_type} / ${record.character}`;
   const fields = [
     ["participant_id", record.participant_id],
+    ["event_type", record.event_type],
     ["condition", record.condition],
     ["time_point_type", record.time_point_type],
     ["time_point_label", record.time_point_label],
@@ -206,6 +207,7 @@ async function createNotionTableRow(record, notionKey, databaseId) {
   const timeCategoryLabel = getTimePointLabel(record.time_point_type);
   const properties = {
     participant_id: { title: notionTitle(record.participant_id) },
+    event_type: { select: { name: record.event_type } },
     condition: { select: { name: conditionLabel } },
     time_point_type: { select: { name: timeCategoryLabel } },
     time_point_label: { rich_text: notionRichText(record.time_point_label) },
@@ -260,6 +262,7 @@ export default async function handler(request, response) {
     const body = typeof request.body === "string" ? JSON.parse(request.body) : request.body || {};
     const record = {
       participant_id: trimText(body.participant_id, 120),
+      event_type: trimText(body.event_type, 120),
       condition: trimText(body.condition, 80),
       time_point_type: trimText(body.time_point_type, 80),
       time_point_label: trimText(body.time_point_label, 240),
@@ -275,7 +278,7 @@ export default async function handler(request, response) {
       timestamp: new Date().toISOString(),
     };
 
-    if (!record.participant_id || !record.condition || !record.time_point_type || !record.character || !record.event_description) {
+    if (!record.participant_id || !record.event_type || !record.condition || !record.time_point_type || !record.character || !record.event_description) {
       sendJson(response, 400, { error: "Missing required generation fields." });
       return;
     }
@@ -292,6 +295,7 @@ export default async function handler(request, response) {
         id: body.id,
         participantId: body.participantId,
         participantCode: record.participant_id,
+        eventType: record.event_type,
         characterId: body.characterId,
         characterName: record.character,
         relationship: record.relationship,

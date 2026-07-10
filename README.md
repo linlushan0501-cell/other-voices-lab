@@ -43,6 +43,7 @@ Notion 資料表欄位需包含：
 
 ```txt
 participant_id        title
+event_type            select: 生理需求, 安全需求, 愛與歸屬, 尊重需求, 自我實現
 condition             select: 真實, 反事實
 time_point_type       select: 過去, 當下, 未來
 time_point_label      text: 使用者設定的時間文字；當下固定寫當下

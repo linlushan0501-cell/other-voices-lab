@@ -1,12 +1,40 @@
 const steps = [
-  { id: "participant", label: "參與者", title: "參與者資料" },
-  { id: "event", label: "事件", title: "事件與時間點" },
-  { id: "characters", label: "角色", title: "他者角色" },
-  { id: "generate", label: "生成", title: "單筆生成" },
+  { id: "participant", label: "參與者", title: "welcome" },
+  { id: "event-type", label: "類型", title: "生命中的關鍵事件" },
+  { id: "event", label: "事件", title: "Monologue of Fictional Others" },
+  { id: "characters", label: "他者", title: "Monologue of Fictional Others" },
+  { id: "generate", label: "生成", title: "Monologue of Fictional Others" },
 ];
 
 const conditions = ["real", "counterfactual"];
 const timePoints = ["past", "present", "future"];
+const eventTypes = [
+  {
+    value: "生理需求",
+    title: "生理需求",
+    description: "哪一次的生病、極度疲憊或身體創傷，讓你發現原來活著、健康不是理所當然的？",
+  },
+  {
+    value: "安全需求",
+    title: "安全需求",
+    description: "哪一個時期或事件，讓你覺得生活失去了控制，甚至連下一步該踩在哪裡都感到不安全？",
+  },
+  {
+    value: "愛與歸屬",
+    title: "愛與歸屬",
+    description: "在哪個群體（家庭、校園、職場）中，你經歷了最深刻的我屬於這裡或我被排擠在外的時刻？",
+  },
+  {
+    value: "尊重需求",
+    title: "尊重需求",
+    description: "哪一次的成就（被肯定）或失敗（被否定），最劇烈地搖晃了你對自己能力的評價？",
+  },
+  {
+    value: "自我實現",
+    title: "自我實現",
+    description: "在哪個瞬間，你放下了賺錢、旁人眼光等現實考量，單純因為這是我真正想活出的模樣？",
+  },
+];
 const storageKey = "research-monologue-dashboard-static-v1";
 const promptVersion = "openai-notion-v3";
 const promptVersionReason =
@@ -30,6 +58,7 @@ function createParticipant(index) {
     id: `participant-${Date.now()}-${index}`,
     code: `P-${String(index).padStart(3, "0")}`,
     interviewDate: "",
+    eventType: eventTypes[0].value,
     realEventDescription: "",
     counterfactualDescription: "",
     realPastTimePoint: "",
@@ -47,6 +76,7 @@ const defaultState = {
   activeParticipantId: firstParticipant.id,
   selectedCondition: "real",
   selectedTimePoint: "present",
+  selectedEventType: firstParticipant.eventType,
   selectedCharacterId: "character-1",
   participants: [firstParticipant],
   generations: [],
@@ -66,6 +96,7 @@ function normalizeParticipant(participant, index = 1) {
     next.code = `P-${String(index).padStart(3, "0")}`;
   }
   next.realPastTimePoint ||= legacyPast;
+  next.eventType ||= eventTypes[0].value;
   next.realFutureTimePoint ||= legacyFuture;
   next.counterfactualPastTimePoint ||= legacyPast;
   next.counterfactualFutureTimePoint ||= legacyFuture;
@@ -81,11 +112,14 @@ function loadState() {
       ? parsed.participants.map(normalizeParticipant)
       : [normalizeParticipant(parsed.participant || {}, 1)];
 
+    const activeParticipantId = parsed.activeParticipantId || participants[0].id;
+    const activeParticipant = getActiveParticipantFromState({ participants, activeParticipantId });
     const next = {
       ...cloneDefaultState(),
       ...parsed,
       participants,
-      activeParticipantId: parsed.activeParticipantId || participants[0].id,
+      activeParticipantId,
+      selectedEventType: parsed.selectedEventType || activeParticipant.eventType,
       generations: parsed.generations || [],
     };
 
@@ -140,6 +174,7 @@ function setStep(stepId) {
 function setActiveParticipant(participantId) {
   state.activeParticipantId = participantId;
   const participant = getActiveParticipant();
+  state.selectedEventType = participant.eventType;
   state.selectedCharacterId = participant.characters[0]?.id || "";
   saveState();
   render();
@@ -178,6 +213,10 @@ function getSelectedCharacter() {
 function getScenarioDescription(condition) {
   const participant = getActiveParticipant();
   return condition === "real" ? participant.realEventDescription : participant.counterfactualDescription;
+}
+
+function getEventTypeLabel(value) {
+  return eventTypes.find((eventType) => eventType.value === value)?.title || value || eventTypes[0].title;
 }
 
 function getTimePointValue(condition, timePoint) {
@@ -221,7 +260,7 @@ function hasRequiredGenerationData() {
   const hasScenario = Boolean(getScenarioDescription(condition).trim());
   const hasTimePoint = timePoint === "present" || Boolean(getTimePointValue(condition, timePoint).trim());
 
-  return Boolean(hasScenario && hasTimePoint && character?.name.trim() && character?.relationship.trim());
+  return Boolean(hasScenario && hasTimePoint && character?.name.trim());
 }
 
 function createMockGeneration() {
@@ -297,6 +336,7 @@ function createMockGeneration() {
     id: generationId(participant.id, character.id, condition, timePointType),
     participantId: participant.id,
     participantCode: participant.code,
+    eventType: getEventTypeLabel(participant.eventType),
     characterId: character.id,
     characterName: character.name || "未命名角色",
     relationship: character.relationship,
@@ -322,9 +362,10 @@ function createGenerationRequest() {
     id: generationId(participant.id, character.id, condition, timePointType),
     participantId: participant.id,
     participant_id: participant.code,
+    event_type: getEventTypeLabel(participant.eventType),
     characterId: character.id,
     character: character.name,
-    relationship: character.relationship,
+    relationship: character.relationship || character.name,
     selection_reason: character.selectionReason,
     condition,
     time_point_type: timePointType,
@@ -374,6 +415,31 @@ function renderNavigation() {
 
   document.querySelectorAll("[data-step]").forEach((button) => {
     button.addEventListener("click", () => setStep(button.dataset.step));
+  });
+}
+
+function renderEventTypes() {
+  const participant = getActiveParticipant();
+  const list = byId("event-type-list");
+  if (!list) return;
+  list.innerHTML = eventTypes
+    .map(
+      (eventType) => `
+        <button class="event-type-card ${participant.eventType === eventType.value ? "active" : ""}" data-event-type="${
+          eventType.value
+        }" type="button">
+          <strong>${eventType.title}</strong>
+          <span>${eventType.description}</span>
+        </button>`,
+    )
+    .join("");
+
+  list.querySelectorAll("[data-event-type]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedEventType = button.dataset.eventType;
+      updateParticipant("eventType", button.dataset.eventType);
+      render();
+    });
   });
 }
 
@@ -456,8 +522,11 @@ function renderGenerationControls() {
 function renderPostcard() {
   const generation = getCurrentGeneration();
   const character = getSelectedCharacter();
+  const conditionLabel = labels[state.selectedCondition];
+  const timePointLabel = labels[state.selectedTimePoint];
   byId("postcard-status").textContent = generation ? "已生成" : "示意";
   byId("postcard-title").textContent = generation?.characterName || character?.name || "爸爸（示意）";
+  byId("postcard-meta").textContent = `${getEventTypeLabel(getActiveParticipant().eventType)} / ${conditionLabel} / ${timePointLabel}`;
   byId("postcard-body").textContent =
     generation?.generatedContent ||
     "【爸爸】我看到他把杯子握得很緊，明明只是幾句話，他卻像怕自己一開口就會撐不住。當下我沒有馬上問，因為我知道他一被追問，就會把話收回去。";
@@ -480,7 +549,7 @@ function renderMatrix() {
             const status = generation ? "generated" : "missing";
             return `<div class="matrix-cell ${status}"><span>${labels[condition]}</span><strong>${labels[timePoint]}</strong></div>`;
           }),
-        )
+          )
         .join("");
       return `<div class="matrix-row"><div class="matrix-name">${character.name || "未命名角色"}</div>${cells}</div>`;
     })
@@ -492,7 +561,7 @@ function renderRecords() {
   byId("record-list").innerHTML =
     activeGenerations.length === 0
       ? `<article class="record-card example">
-          <p>示意 / 關鍵事件 / 當下</p>
+          <p>示意 / ${getEventTypeLabel(getActiveParticipant().eventType)} / 當下</p>
           <h4>爸爸</h4>
           <p>生成後，每一筆會像這樣列在這裡。正式串接後，這筆資料會同時自動寫入 Notion。</p>
         </article>`
@@ -500,7 +569,9 @@ function renderRecords() {
           .map(
             (generation) => `
         <article class="record-card">
-          <p>${labels[generation.condition]} / ${labels[generation.timePointType]} / ${generation.timePointValue}</p>
+          <p>${generation.eventType || getEventTypeLabel(getActiveParticipant().eventType)} / ${labels[generation.condition]} / ${
+            labels[generation.timePointType]
+          } / ${generation.timePointValue}</p>
           <h4>${generation.characterName}</h4>
           <p>${generation.generatedContent}</p>
         </article>`,
@@ -518,6 +589,7 @@ function renderGeneratedViews() {
 function render() {
   renderNavigation();
   renderStepVisibility();
+  renderEventTypes();
   renderForms();
   renderCharacters();
   renderGeneratedViews();

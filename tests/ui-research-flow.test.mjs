@@ -12,6 +12,13 @@ assert.match(script, /participants:/, "State should store multiple participants.
 assert.match(script, /activeParticipantId/, "State should track the active participant.");
 assert.match(script, /getActiveParticipant/, "Code should read data through the active participant.");
 assert.match(script, /participantId === participant\.id/, "Generated records should be scoped to the active participant.");
+assert.match(html, /生命中的關鍵事件/, "UI should include the new life event type selection screen.");
+assert.match(html + script, /生理需求/, "UI should offer the physiology event type.");
+assert.match(html + script, /安全需求/, "UI should offer the safety event type.");
+assert.match(html + script, /愛與歸屬/, "UI should offer the belonging event type.");
+assert.match(html + script, /尊重需求/, "UI should offer the esteem event type.");
+assert.match(html + script, /自我實現/, "UI should offer the self-actualization event type.");
+assert.match(script, /selectedEventType/, "State should track the selected life event type.");
 
 assert.doesNotMatch(html + script, /此時此刻/, "The UI/mock output should not use the stiff phrase 此時此刻.");
 assert.doesNotMatch(html + script, /我站在/, "Mock monologues should not force a spatial time-travel opening.");
